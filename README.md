@@ -70,6 +70,17 @@ The API will be available at `https://localhost:5001` or `http://localhost:5000`
 - **Health Dashboard**: `http://localhost:5000/health-ui` - Real-time monitoring dashboard
 - **Performance Metrics**: `http://localhost:5000/metrics` - Application performance data
 - **SignalR Hub**: `ws://localhost:5000/hubs/vessel` - Real-time vessel updates
+- **Authentication**: `http://localhost:5000/api/auth/login` - User authentication endpoint
+
+### Default Users
+
+| Username | Password | Role | Description |
+|----------|----------|------|-------------|
+| admin | admin123 | Administrator | Full system access |
+| captain | captain123 | Captain | Vessel command authority |
+| engineer | engineer123 | ChiefEngineer | Technical systems |
+| operator | operator123 | Operator | General operations |
+| observer | observer123 | Observer | Read-only monitoring |
 
 ## Project Structure
 
@@ -121,6 +132,11 @@ K-Chief-Marine-Automation-Platform/
 - Comprehensive structured logging with Serilog
 - Request/response logging with correlation ID tracking
 - Multiple log sinks (Console, File, Application Insights)
+- JWT authentication with role-based authorization
+- Maritime-specific user roles and permissions
+- API key authentication for service-to-service communication
+- Policy-based authorization with custom requirements
+- Comprehensive user management and security features
 
 ### Architecture Highlights
 
@@ -141,6 +157,11 @@ K-Chief-Marine-Automation-Platform/
 - Advanced structured logging with rich contextual data
 - End-to-end request correlation and distributed tracing
 - Multiple logging sinks with environment-specific configuration
+- Production-grade authentication and authorization system
+- Maritime hierarchy-based role management with 11 distinct roles
+- Multi-method authentication (JWT, API Keys, OAuth 2.0 ready)
+- Fine-grained policy-based access control with custom requirements
+- Comprehensive security features with audit logging and monitoring
 
 ## Documentation
 
@@ -155,6 +176,7 @@ Comprehensive documentation is available in the `docs/` directory:
 - [Monitoring Guide](docs/MONITORING.md) - Health checks and observability implementation
 - [Error Handling Guide](docs/ERROR_HANDLING.md) - Exception management and error handling patterns
 - [Logging Guide](docs/LOGGING.md) - Structured logging with Serilog implementation
+- [Authentication Guide](docs/AUTHENTICATION.md) - Comprehensive authentication and authorization system
 
 ## Development Guidelines
 

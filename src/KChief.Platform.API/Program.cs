@@ -1,6 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using Serilog;
 using Serilog.Context;
 using KChief.Platform.API.Hubs;
@@ -8,6 +12,7 @@ using KChief.Platform.API.Services;
 using KChief.Platform.API.HealthChecks;
 using KChief.Platform.API.Middleware;
 using KChief.Platform.API.Filters;
+using KChief.Platform.API.Authorization;
 using KChief.Platform.Core.Interfaces;
 using KChief.AlarmSystem.Services;
 using KChief.DataAccess.Data;
@@ -76,8 +81,75 @@ public class Program
         // Add Performance Monitoring
         builder.Services.AddSingleton<PerformanceMonitoringService>();
 
-        // Add Error Logging Service
-        builder.Services.AddScoped<ErrorLoggingService>();
+            // Add Error Logging Service
+            builder.Services.AddScoped<ErrorLoggingService>();
+
+            // Add Authentication Services
+            builder.Services.AddScoped<IKChiefAuthenticationService, AuthenticationService>();
+            builder.Services.AddScoped<IUserService, UserService>();
+
+            // Configure JWT Authentication
+            var jwtSecret = builder.Configuration["Authentication:JWT:Secret"];
+            var jwtIssuer = builder.Configuration["Authentication:JWT:Issuer"];
+            var jwtAudience = builder.Configuration["Authentication:JWT:Audience"];
+
+            if (!string.IsNullOrEmpty(jwtSecret))
+            {
+                var key = Encoding.ASCII.GetBytes(jwtSecret);
+
+                builder.Services.AddAuthentication(options =>
+                {
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(options =>
+                {
+                    options.RequireHttpsMetadata = builder.Configuration.GetValue<bool>("Authentication:Security:RequireHttpsMetadata", false);
+                    options.SaveToken = true;
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(key),
+                        ValidateIssuer = !string.IsNullOrEmpty(jwtIssuer),
+                        ValidIssuer = jwtIssuer,
+                        ValidateAudience = !string.IsNullOrEmpty(jwtAudience),
+                        ValidAudience = jwtAudience,
+                        ValidateLifetime = true,
+                        ClockSkew = TimeSpan.Zero
+                    };
+
+                    // Configure SignalR JWT authentication
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+                            var path = context.HttpContext.Request.Path;
+                            
+                            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                            {
+                                context.Token = accessToken;
+                            }
+                            
+                            return Task.CompletedTask;
+                        }
+                    };
+                })
+                .AddScheme<ApiKeyAuthenticationSchemeOptions, ApiKeyAuthenticationSchemeHandler>(
+                    ApiKeyAuthenticationSchemeOptions.DefaultScheme, 
+                    options => { });
+            }
+
+            // Configure Authorization
+            builder.Services.AddAuthorization(options =>
+            {
+                MaritimeAuthorizationPolicies.ConfigurePolicies(options);
+            });
+
+            // Register authorization handlers
+            builder.Services.AddScoped<IAuthorizationHandler, VesselAccessHandler>();
+            builder.Services.AddScoped<IAuthorizationHandler, VesselOwnershipHandler>();
+            builder.Services.AddScoped<IAuthorizationHandler, EmergencyAccessHandler>();
 
         // Add Health Checks
         builder.Services.AddHealthChecks()
@@ -161,10 +233,13 @@ public class Program
         // Add global exception handling middleware (must be early in pipeline)
         app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
-        // Add performance monitoring middleware
-        app.UseMiddleware<PerformanceMonitoringMiddleware>();
+            // Add performance monitoring middleware
+            app.UseMiddleware<PerformanceMonitoringMiddleware>();
 
-        app.UseAuthorization();
+            // Add authentication and authorization
+            app.UseAuthentication();
+            app.UseMiddleware<ApiKeyAuthenticationMiddleware>();
+            app.UseAuthorization();
         app.MapControllers();
 
         // Map SignalR hub
