@@ -21,6 +21,14 @@ using FluentValidation.AspNetCore;
 using KChief.Platform.Core.Interfaces;
 using KChief.Platform.Core.Models;
 using KChief.AlarmSystem.Services;
+using KChief.Platform.Core.Telemetry;
+using KChief.Platform.API.Services.Telemetry;
+using KChief.Platform.API.Swagger;
+using KChief.Platform.API.Services.Background;
+using KChief.Platform.API.Services.Scheduled;
+using Quartz;
+using Quartz.Impl;
+using Quartz.Spi;
 using KChief.DataAccess.Data;
 using KChief.DataAccess.Interfaces;
 using KChief.DataAccess.Services;
@@ -75,14 +83,10 @@ public class Program
             options.Filters.Add<OperationCancelledExceptionFilter>();
         });
         builder.Services.AddEndpointsApiExplorer();
+        // Configure Swagger with enhanced documentation
         builder.Services.AddSwaggerGen(c =>
         {
-            c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
-            {
-                Title = "K-Chief Marine Automation Platform API",
-                Version = "v1",
-                Description = "RESTful API for marine vessel control and monitoring"
-            });
+            SwaggerConfiguration.ConfigureSwaggerGen(c);
         });
 
         // Add Entity Framework
@@ -154,7 +158,60 @@ public class Program
         builder.Services.AddSignalR();
 
         // Add Application Insights
-        builder.Services.AddApplicationInsightsTelemetry();
+        builder.Services.AddApplicationInsightsTelemetry(options =>
+        {
+            options.ConnectionString = builder.Configuration["ApplicationInsights:ConnectionString"];
+            options.EnableAdaptiveSampling = true;
+            options.EnableDependencyTrackingTelemetryModule = true;
+            options.EnableRequestTrackingTelemetryModule = true;
+            options.EnableEventCounterCollectionModule = true;
+            options.EnablePerformanceCounterCollectionModule = true;
+        });
+
+        // Register telemetry services
+        builder.Services.AddSingleton<ITelemetryService, ApplicationInsightsTelemetryService>();
+        builder.Services.AddSingleton<CustomMetricsService>();
+        builder.Services.AddSingleton<DistributedTracingService>();
+        builder.Services.AddSingleton<PerformanceProfilingService>();
+
+        // Configure background services
+        builder.Services.Configure<DataPollingOptions>(
+            builder.Configuration.GetSection("BackgroundServices:DataPolling"));
+        builder.Services.Configure<PeriodicHealthCheckOptions>(
+            builder.Configuration.GetSection("BackgroundServices:PeriodicHealthCheck"));
+        builder.Services.Configure<DataSynchronizationOptions>(
+            builder.Configuration.GetSection("BackgroundServices:DataSynchronization"));
+        builder.Services.Configure<MessageQueueOptions>(
+            builder.Configuration.GetSection("BackgroundServices:MessageQueue"));
+
+        // Register background services
+        builder.Services.AddHostedService<DataPollingService>();
+        builder.Services.AddHostedService<PeriodicHealthCheckService>();
+        builder.Services.AddHostedService<DataSynchronizationService>();
+        builder.Services.AddSingleton<MessageQueueProcessor>();
+        builder.Services.AddHostedService(sp => sp.GetRequiredService<MessageQueueProcessor>());
+
+        // Register Quartz.NET for scheduled tasks
+        builder.Services.AddQuartz(q =>
+        {
+            q.UseMicrosoftDependencyInjectionJobFactory();
+            q.UseSimpleTypeLoader();
+            q.UseInMemoryStore();
+            q.UseDefaultThreadPool(tp =>
+            {
+                tp.MaxConcurrency = 10;
+            });
+        });
+
+        builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
+
+        // Register scheduled jobs
+        builder.Services.AddScoped<DataCleanupJob>();
+        builder.Services.AddScoped<ReportGenerationJob>();
+        builder.Services.AddScoped<HealthCheckJob>();
+        builder.Services.AddSingleton<ScheduledTaskService>();
+        builder.Services.AddSingleton<IJobFactory, JobFactory>();
+        builder.Services.AddSingleton<ISchedulerFactory, StdSchedulerFactory>();
 
         // Add Performance Monitoring
         builder.Services.AddSingleton<PerformanceMonitoringService>();
@@ -342,7 +399,7 @@ public class Program
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "K-Chief API v1");
+                SwaggerConfiguration.ConfigureSwaggerUI(c);
             });
         }
 
@@ -351,6 +408,9 @@ public class Program
 
         // Add correlation ID middleware (must be very early in pipeline)
         app.UseMiddleware<CorrelationIdMiddleware>();
+
+        // Add telemetry middleware (early in pipeline for comprehensive tracking)
+        app.UseMiddleware<TelemetryMiddleware>();
 
         // Add validation middleware (early validation of JSON structure)
         app.UseMiddleware<ValidationMiddleware>();

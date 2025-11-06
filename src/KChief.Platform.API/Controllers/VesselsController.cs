@@ -24,10 +24,40 @@ public class VesselsController : ControllerBase
     /// <summary>
     /// Gets all vessels in the system.
     /// </summary>
+    /// <remarks>
+    /// Retrieves a list of all vessels registered in the system.
+    /// 
+    /// **Example Request:**
+    /// ```
+    /// GET /api/vessels
+    /// Authorization: Bearer {token}
+    /// ```
+    /// 
+    /// **Example Response:**
+    /// ```json
+    /// [
+    ///   {
+    ///     "id": "vessel-001",
+    ///     "name": "MV Atlantic",
+    ///     "imoNumber": "IMO1234567",
+    ///     "callSign": "ATL1",
+    ///     "type": "Cargo",
+    ///     "length": 200.5,
+    ///     "width": 32.0,
+    ///     "draft": 12.5,
+    ///     "status": "InService"
+    ///   }
+    /// ]
+    /// ```
+    /// </remarks>
     /// <returns>List of vessels</returns>
     /// <response code="200">Returns the list of vessels</response>
+    /// <response code="401">Unauthorized - Authentication required</response>
+    /// <response code="500">Internal server error</response>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<Vessel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<IEnumerable<Vessel>>> GetAllVessels()
     {
         _logger.LogInformation("Getting all vessels");
@@ -38,13 +68,43 @@ public class VesselsController : ControllerBase
     /// <summary>
     /// Gets a specific vessel by its ID.
     /// </summary>
-    /// <param name="id">Vessel identifier</param>
+    /// <remarks>
+    /// Retrieves detailed information about a specific vessel.
+    /// 
+    /// **Example Request:**
+    /// ```
+    /// GET /api/vessels/vessel-001
+    /// Authorization: Bearer {token}
+    /// ```
+    /// 
+    /// **Example Response:**
+    /// ```json
+    /// {
+    ///   "id": "vessel-001",
+    ///   "name": "MV Atlantic",
+    ///   "imoNumber": "IMO1234567",
+    ///   "callSign": "ATL1",
+    ///   "type": "Cargo",
+    ///   "length": 200.5,
+    ///   "width": 32.0,
+    ///   "draft": 12.5,
+    ///   "grossTonnage": 15000.0,
+    ///   "flag": "US",
+    ///   "status": "InService"
+    /// }
+    /// ```
+    /// </remarks>
+    /// <param name="id">Vessel identifier (e.g., "vessel-001")</param>
     /// <returns>Vessel information</returns>
     /// <response code="200">Returns the vessel</response>
+    /// <response code="401">Unauthorized - Authentication required</response>
     /// <response code="404">Vessel not found</response>
+    /// <response code="500">Internal server error</response>
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(Vessel), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<Vessel>> GetVesselById(string id)
     {
         _logger.LogInformation("Getting vessel with ID: {VesselId}", id);
