@@ -118,6 +118,9 @@ K-Chief-Marine-Automation-Platform/
 - Global exception handling with RFC 7807 Problem Details
 - Custom exception types with context and correlation tracking
 - Structured error logging with comprehensive diagnostics
+- Comprehensive structured logging with Serilog
+- Request/response logging with correlation ID tracking
+- Multiple log sinks (Console, File, Application Insights)
 
 ### Architecture Highlights
 
@@ -135,6 +138,9 @@ K-Chief-Marine-Automation-Platform/
 - Production-grade error handling and exception management
 - Standardized error responses with detailed context
 - Security-aware logging with sensitive data protection
+- Advanced structured logging with rich contextual data
+- End-to-end request correlation and distributed tracing
+- Multiple logging sinks with environment-specific configuration
 
 ## Documentation
 
@@ -148,6 +154,7 @@ Comprehensive documentation is available in the `docs/` directory:
 - [Database Guide](docs/DATABASE.md) - Entity Framework implementation guide
 - [Monitoring Guide](docs/MONITORING.md) - Health checks and observability implementation
 - [Error Handling Guide](docs/ERROR_HANDLING.md) - Exception management and error handling patterns
+- [Logging Guide](docs/LOGGING.md) - Structured logging with Serilog implementation
 
 ## Development Guidelines
 

@@ -32,9 +32,10 @@ WORKDIR /app
 # Install curl for health checks
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
-# Create directories for OPC UA certificates and database
-RUN mkdir -p "/app/OPC Foundation/CertificateStores" && \
-    mkdir -p /app/data
+    # Create directories for OPC UA certificates, database, and logs
+    RUN mkdir -p "/app/OPC Foundation/CertificateStores" && \
+        mkdir -p /app/data && \
+        mkdir -p /app/logs
 
 # Create non-root user for security
 RUN adduser --disabled-password --gecos "" --uid 1000 appuser && \

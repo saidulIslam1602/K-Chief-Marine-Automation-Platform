@@ -1,4 +1,6 @@
 using System.Text.Json;
+using Serilog;
+using Serilog.Context;
 using KChief.Platform.Core.Exceptions;
 
 namespace KChief.Platform.API.Services;
@@ -35,8 +37,8 @@ public class ErrorLoggingService
                 ["stackTrace"] = exception.StackTrace,
                 ["source"] = exception.Source,
                 ["hResult"] = exception.HResult,
-                ["errorCode"] = exception is KChiefException kchiefEx ? kchiefEx.ErrorCode : null,
-                ["context"] = exception is KChiefException kchiefEx2 ? kchiefEx2.Context : null,
+                ["errorCode"] = exception is KChiefException kEx ? kEx.ErrorCode : null,
+                ["context"] = exception is KChiefException kEx2 ? kEx2.Context : null,
                 ["innerException"] = exception.InnerException != null ? new Dictionary<string, object?>
                 {
                     ["type"] = exception.InnerException.GetType().Name,
@@ -59,21 +61,26 @@ public class ErrorLoggingService
             ["environment"] = _environment.EnvironmentName
         };
 
-        var logLevel = DetermineLogLevel(exception);
-        var message = "Exception occurred: {ExceptionType} - {ExceptionMessage} [CorrelationId: {CorrelationId}]";
-
-        _logger.Log(logLevel, exception, message, 
-            exception.GetType().Name, 
-            exception.Message, 
-            correlationId);
-
-        // Log structured data as separate entry for better searchability
-        _logger.LogInformation("Exception Details: {ExceptionDetails}", 
-            JsonSerializer.Serialize(logData, new JsonSerializerOptions 
-            { 
-                WriteIndented = true,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            }));
+        // Use Serilog for structured logging with rich context
+        using (LogContext.PushProperty("CorrelationId", correlationId))
+        using (LogContext.PushProperty("ExceptionType", exception.GetType().Name))
+        using (LogContext.PushProperty("ExceptionSource", exception.Source))
+        using (LogContext.PushProperty("ExceptionHResult", exception.HResult))
+        {
+            // Add custom exception context if available
+            if (exception is KChiefException kchiefEx)
+            {
+                using (LogContext.PushProperty("ErrorCode", kchiefEx.ErrorCode))
+                using (LogContext.PushProperty("ExceptionContext", kchiefEx.Context, destructureObjects: true))
+                {
+                    LogExceptionWithSerilog(exception, correlationId, httpContext);
+                }
+            }
+            else
+            {
+                LogExceptionWithSerilog(exception, correlationId, httpContext);
+            }
+        }
     }
 
     /// <summary>
@@ -174,5 +181,63 @@ public class ErrorLoggingService
         }
 
         return safeHeaders;
+    }
+
+    private void LogExceptionWithSerilog(Exception exception, string correlationId, HttpContext? httpContext)
+    {
+        var logLevel = DetermineLogLevel(exception);
+        
+        // Add request context if available
+        if (httpContext != null)
+        {
+            using (LogContext.PushProperty("RequestMethod", httpContext.Request.Method))
+            using (LogContext.PushProperty("RequestPath", httpContext.Request.Path.Value))
+            using (LogContext.PushProperty("RequestQueryString", httpContext.Request.QueryString.Value))
+            using (LogContext.PushProperty("ClientIP", GetClientIpAddress(httpContext)))
+            using (LogContext.PushProperty("UserAgent", httpContext.Request.Headers.UserAgent.ToString()))
+            using (LogContext.PushProperty("UserId", httpContext.User?.Identity?.Name))
+            {
+                Log.Write(ConvertToSerilogLevel(logLevel), exception,
+                    "Exception occurred during {RequestMethod} {RequestPath}: {ExceptionMessage}",
+                    httpContext.Request.Method, httpContext.Request.Path, exception.Message);
+            }
+        }
+        else
+        {
+            Log.Write(ConvertToSerilogLevel(logLevel), exception,
+                "Exception occurred: {ExceptionMessage}", exception.Message);
+        }
+    }
+
+    private static string GetClientIpAddress(HttpContext httpContext)
+    {
+        // Check for forwarded IP addresses (load balancers, proxies)
+        var forwardedFor = httpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+        if (!string.IsNullOrEmpty(forwardedFor))
+        {
+            return forwardedFor.Split(',')[0].Trim();
+        }
+
+        var realIp = httpContext.Request.Headers["X-Real-IP"].FirstOrDefault();
+        if (!string.IsNullOrEmpty(realIp))
+        {
+            return realIp;
+        }
+
+        return httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+    }
+
+    private static Serilog.Events.LogEventLevel ConvertToSerilogLevel(LogLevel logLevel)
+    {
+        return logLevel switch
+        {
+            LogLevel.Trace => Serilog.Events.LogEventLevel.Verbose,
+            LogLevel.Debug => Serilog.Events.LogEventLevel.Debug,
+            LogLevel.Information => Serilog.Events.LogEventLevel.Information,
+            LogLevel.Warning => Serilog.Events.LogEventLevel.Warning,
+            LogLevel.Error => Serilog.Events.LogEventLevel.Error,
+            LogLevel.Critical => Serilog.Events.LogEventLevel.Fatal,
+            _ => Serilog.Events.LogEventLevel.Information
+        };
     }
 }

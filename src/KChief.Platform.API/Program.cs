@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Serilog;
+using Serilog.Context;
 using KChief.Platform.API.Hubs;
 using KChief.Platform.API.Services;
 using KChief.Platform.API.HealthChecks;
@@ -22,7 +24,26 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        var builder = WebApplication.CreateBuilder(args);
+        // Configure Serilog early to capture startup logs
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"}.json", optional: true)
+            .AddEnvironmentVariables()
+            .Build();
+
+        Log.Logger = new LoggerConfiguration()
+            .ReadFrom.Configuration(configuration)
+            .CreateLogger();
+
+        try
+        {
+            Log.Information("Starting K-Chief Marine Automation Platform");
+            
+            var builder = WebApplication.CreateBuilder(args);
+            
+            // Use Serilog for logging
+            builder.Host.UseSerilog();
 
         // Add services to the container
         builder.Services.AddControllers(options =>
@@ -131,6 +152,12 @@ public class Program
         app.UseHttpsRedirection();
         app.UseCors();
 
+        // Add correlation ID middleware (must be very early in pipeline)
+        app.UseMiddleware<CorrelationIdMiddleware>();
+
+        // Add request/response logging middleware
+        app.UseMiddleware<RequestResponseLoggingMiddleware>();
+
         // Add global exception handling middleware (must be early in pipeline)
         app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
@@ -174,6 +201,15 @@ public class Program
             return Results.Ok(performanceService.GetPerformanceStats());
         }).WithTags("Monitoring");
 
-        app.Run();
+            app.Run();
+        }
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, "Application terminated unexpectedly");
+        }
+        finally
+        {
+            Log.CloseAndFlush();
+        }
     }
 }
