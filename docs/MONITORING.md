@@ -2,7 +2,7 @@
 
 ## Overview
 
-The K-Chief Marine Automation Platform implements comprehensive monitoring and observability features to ensure production-ready operations. This includes health checks, performance monitoring, metrics collection, and integration with monitoring platforms.
+The HMI Marine Automation Platform implements comprehensive monitoring and observability features to ensure production-ready operations. This includes health checks, performance monitoring, metrics collection, and integration with monitoring platforms.
 
 ## Health Checks
 
@@ -402,7 +402,7 @@ kchief_memory_usage_bytes / 1024 / 1024 > 512
     "LogLevel": {
       "Default": "Information",
       "Microsoft.AspNetCore": "Warning",
-      "KChief.Platform.API.Middleware.PerformanceMonitoringMiddleware": "Information"
+      "HMI.Platform.API.Middleware.PerformanceMonitoringMiddleware": "Information"
     }
   }
 }
@@ -522,4 +522,4 @@ kubectl get hpa kchief-api-hpa
 - [ ] Performance SLAs defined
 - [ ] Disaster recovery tested
 
-This comprehensive monitoring setup ensures production-ready observability and helps maintain high availability and performance of the K-Chief Marine Automation Platform.
+This comprehensive monitoring setup ensures production-ready observability and helps maintain high availability and performance of the HMI Marine Automation Platform.

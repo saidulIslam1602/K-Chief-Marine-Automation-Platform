@@ -2,7 +2,7 @@
 
 ## Overview
 
-The K-Chief Marine Automation Platform includes comprehensive testing infrastructure with advanced patterns including test fixtures, builders, property-based testing, performance testing, contract testing, and test data generation.
+The HMI Marine Automation Platform includes comprehensive testing infrastructure with advanced patterns including test fixtures, builders, property-based testing, performance testing, contract testing, and test data generation.
 
 ## Testing Architecture
 
@@ -10,7 +10,7 @@ The K-Chief Marine Automation Platform includes comprehensive testing infrastruc
 
 ```
 tests/
-├── KChief.Platform.Tests/          # Unit tests
+├── HMI.Platform.Tests/          # Unit tests
 │   ├── TestHelpers/
 │   │   ├── TestFixtures/          # Test fixtures
 │   │   ├── Builders/              # Test data builders
@@ -19,7 +19,7 @@ tests/
 │   │   ├── Contract/              # Contract testing
 │   │   └── DataGenerators/        # Test data generators
 │   └── Examples/                  # Example tests
-└── KChief.Integration.Tests/      # Integration tests
+└── HMI.Integration.Tests/      # Integration tests
 ```
 
 ## Test Fixtures
@@ -357,7 +357,7 @@ public class MyContractTests : ContractTestBase
 Use Bogus for generating realistic test data:
 
 ```csharp
-using KChief.Platform.Tests.TestHelpers.DataGenerators;
+using HMI.Platform.Tests.TestHelpers.DataGenerators;
 
 var faker = new Faker();
 
@@ -491,7 +491,7 @@ dotnet test
 ### Run Specific Test Project
 
 ```bash
-dotnet test tests/KChief.Platform.Tests
+dotnet test tests/HMI.Platform.Tests
 ```
 
 ### Run with Coverage

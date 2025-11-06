@@ -1,22 +1,22 @@
-# K-Chief Marine Automation Platform
+# HMI Marine Automation Platform
 
-A comprehensive marine automation platform built with .NET 8, designed to provide scalable, high-quality solutions for vessel control systems, industrial protocol integration, and real-time data management.
+A comprehensive marine Human-Machine Interface (HMI) platform built with .NET 8, designed to provide scalable, high-quality solutions for vessel control systems, industrial protocol integration, and real-time data management.
 
 ## Overview
 
-The K-Chief Marine Automation Platform is a modular, distributed system that simulates and manages vessel control operations. It provides a foundation for building integrated marine automation solutions with support for industrial communication protocols, alarm management, and real-time data processing.
+The HMI Marine Automation Platform is a modular, distributed system that simulates and manages vessel control operations. It provides a foundation for building integrated marine automation solutions with support for industrial communication protocols, alarm management, and real-time data processing.
 
 ## Architecture
 
 The platform follows a modular architecture with clear separation of concerns:
 
-- **KChief.Platform.Core**: Core domain models, interfaces, and shared components
-- **KChief.Platform.API**: RESTful API layer providing HTTP endpoints for system integration
-- **KChief.DataAccess**: Data persistence layer with repository pattern implementation
-- **KChief.VesselControl**: Vessel control logic and engine monitoring
-- **KChief.AlarmSystem**: Alarm and event management system
-- **KChief.Protocols.OPC**: OPC UA protocol integration for industrial communication
-- **KChief.Protocols.Modbus**: Modbus TCP/RTU protocol integration
+- **HMI.Platform.Core**: Core domain models, interfaces, and shared components
+- **HMI.Platform.API**: RESTful API layer providing HTTP endpoints for system integration
+- **HMI.DataAccess**: Data persistence layer with repository pattern implementation
+- **HMI.VesselControl**: Vessel control logic and engine monitoring
+- **HMI.AlarmSystem**: Alarm and event management system
+- **HMI.Protocols.OPC**: OPC UA protocol integration for industrial communication
+- **HMI.Protocols.Modbus**: Modbus TCP/RTU protocol integration
 
 ## Technology Stack
 
@@ -37,8 +37,8 @@ The platform follows a modular architecture with clear separation of concerns:
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/saidulIslam1602/K-Chief-Marine-Automation-Platform.git
-cd K-Chief-Marine-Automation-Platform
+git clone https://github.com/saidulIslam1602/HMI-Marine-Automation-Platform.git
+cd HMI-Marine-Automation-Platform
 ```
 
 ### Build the Solution
@@ -57,7 +57,7 @@ dotnet test
 ### Run the API
 
 ```bash
-cd src/KChief.Platform.API
+cd src/HMI.Platform.API
 dotnet run
 ```
 
@@ -76,18 +76,18 @@ The API will be available at `https://localhost:5001` or `http://localhost:5000`
 ## Project Structure
 
 ```
-K-Chief-Marine-Automation-Platform/
+HMI-Marine-Automation-Platform/
 ├── src/
-│   ├── KChief.Platform.Core/          # Core domain and shared components
-│   ├── KChief.Platform.API/            # REST API layer
-│   ├── KChief.DataAccess/             # Data access layer
-│   ├── KChief.VesselControl/          # Vessel control logic
-│   ├── KChief.AlarmSystem/            # Alarm management
-│   ├── KChief.Protocols.OPC/          # OPC UA integration
-│   └── KChief.Protocols.Modbus/       # Modbus integration
+│   ├── HMI.Platform.Core/          # Core domain and shared components
+│   ├── HMI.Platform.API/            # REST API layer
+│   ├── HMI.DataAccess/             # Data access layer
+│   ├── HMI.VesselControl/          # Vessel control logic
+│   ├── HMI.AlarmSystem/            # Alarm management
+│   ├── HMI.Protocols.OPC/          # OPC UA integration
+│   └── HMI.Protocols.Modbus/       # Modbus integration
 ├── tests/
-│   ├── KChief.Platform.Tests/         # Unit tests
-│   └── KChief.Integration.Tests/      # Integration tests
+│   ├── HMI.Platform.Tests/         # Unit tests
+│   └── HMI.Integration.Tests/      # Integration tests
 ├── docker/                             # Docker configuration files
 ├── docs/                               # Additional documentation
 └── .github/

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The K-Chief Marine Automation Platform implements comprehensive connection pooling and resource management for protocol connections (OPC UA, Modbus) to optimize performance, reduce connection overhead, and ensure proper resource disposal.
+The HMI Marine Automation Platform implements comprehensive connection pooling and resource management for protocol connections (OPC UA, Modbus) to optimize performance, reduce connection overhead, and ensure proper resource disposal.
 
 ## Architecture
 

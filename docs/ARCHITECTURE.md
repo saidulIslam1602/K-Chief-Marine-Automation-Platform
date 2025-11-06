@@ -1,30 +1,30 @@
-# K-Chief Marine Automation Platform - Architecture Documentation
+# HMI Marine Automation Platform - Architecture Documentation
 
 ## System Architecture Overview
 
-The K-Chief Marine Automation Platform follows a modular, layered architecture designed for scalability, maintainability, and extensibility.
+The HMI Marine Automation Platform follows a modular, layered architecture designed for scalability, maintainability, and extensibility.
 
 ## Architecture Layers
 
 ### 1. Presentation Layer
-- **KChief.Platform.API**: RESTful API endpoints
+- **HMI.Platform.API**: RESTful API endpoints
 - **SignalR Hubs**: Real-time communication
 - **Swagger/OpenAPI**: API documentation
 
 ### 2. Application Layer
-- **KChief.VesselControl**: Vessel and engine control logic
-- **KChief.AlarmSystem**: Alarm management
-- **KChief.Platform.API.Services**: Application services
+- **HMI.VesselControl**: Vessel and engine control logic
+- **HMI.AlarmSystem**: Alarm management
+- **HMI.Platform.API.Services**: Application services
 
 ### 3. Domain Layer
-- **KChief.Platform.Core**: Domain models, interfaces, and core business logic
+- **HMI.Platform.Core**: Domain models, interfaces, and core business logic
   - Models: Vessel, Engine, Sensor, Alarm
   - Interfaces: IVesselControlService, IAlarmService, IOPCUaClient, IModbusClient, IMessageBus
 
 ### 4. Infrastructure Layer
-- **KChief.DataAccess**: Data persistence and message bus
-- **KChief.Protocols.OPC**: OPC UA protocol integration
-- **KChief.Protocols.Modbus**: Modbus TCP/RTU integration
+- **HMI.DataAccess**: Data persistence and message bus
+- **HMI.Protocols.OPC**: OPC UA protocol integration
+- **HMI.Protocols.Modbus**: Modbus TCP/RTU integration
 
 ## Component Diagram
 

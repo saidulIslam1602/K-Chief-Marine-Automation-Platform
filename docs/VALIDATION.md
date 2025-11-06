@@ -2,7 +2,7 @@
 
 ## Overview
 
-The K-Chief Marine Automation Platform uses FluentValidation for comprehensive, type-safe data validation. This provides a clean separation of validation logic from models and controllers, with support for custom validators, localization, and middleware integration.
+The HMI Marine Automation Platform uses FluentValidation for comprehensive, type-safe data validation. This provides a clean separation of validation logic from models and controllers, with support for custom validators, localization, and middleware integration.
 
 ## Architecture
 

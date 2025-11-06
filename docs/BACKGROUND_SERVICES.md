@@ -2,7 +2,7 @@
 
 ## Overview
 
-The K-Chief Marine Automation Platform includes comprehensive background processing capabilities using ASP.NET Core hosted services and Quartz.NET for scheduled tasks.
+The HMI Marine Automation Platform includes comprehensive background processing capabilities using ASP.NET Core hosted services and Quartz.NET for scheduled tasks.
 
 ## Architecture
 

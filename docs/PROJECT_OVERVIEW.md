@@ -1,4 +1,4 @@
-# K-Chief Marine Automation Platform - Comprehensive Project Overview
+# HMI Marine Automation Platform - Comprehensive Project Overview
 
 ## Table of Contents
 
@@ -21,7 +21,7 @@
 
 ## Executive Summary
 
-The **K-Chief Marine Automation Platform** is a comprehensive, enterprise-grade marine vessel automation system built with .NET 8. It provides real-time monitoring, control, and management of marine vessels, engines, sensors, and alarm systems through a modern, scalable architecture.
+The **HMI Marine Automation Platform** is a comprehensive, enterprise-grade marine vessel automation system built with .NET 8. It provides real-time monitoring, control, and management of marine vessels, engines, sensors, and alarm systems through a modern, scalable architecture.
 
 ### Key Highlights
 
@@ -53,7 +53,7 @@ The **K-Chief Marine Automation Platform** is a comprehensive, enterprise-grade 
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                      Presentation Layer (API)                             │
 │  ┌────────────────────────────────────────────────────────────────────┐ │
-│  │                    KChief.Platform.API                              │ │
+│  │                    HMI.Platform.API                              │ │
 │  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐            │ │
 │  │  │ Controllers  │  │ Middleware   │  │ SignalR Hubs │            │ │
 │  │  │ - Vessels    │  │ - Auth       │  │ - VesselHub  │            │ │
@@ -84,7 +84,7 @@ The **K-Chief Marine Automation Platform** is a comprehensive, enterprise-grade 
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                        Domain Layer (Core)                               │
 │  ┌────────────────────────────────────────────────────────────────────┐ │
-│  │                    KChief.Platform.Core                             │ │
+│  │                    HMI.Platform.Core                             │ │
 │  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐            │ │
 │  │  │ Models       │  │ Interfaces   │  │ Utilities    │            │ │
 │  │  │ - Vessel     │  │ - Services   │  │ - Extensions │            │ │
@@ -121,7 +121,7 @@ The **K-Chief Marine Automation Platform** is a comprehensive, enterprise-grade 
 
 ### Architecture Layers
 
-#### 1. Presentation Layer (`KChief.Platform.API`)
+#### 1. Presentation Layer (`HMI.Platform.API`)
 
 **Components:**
 - **Controllers**: RESTful API endpoints
@@ -160,13 +160,13 @@ The **K-Chief Marine Automation Platform** is a comprehensive, enterprise-grade 
 
 #### 2. Application Layer
 
-**KChief.VesselControl:**
+**HMI.VesselControl:**
 - `VesselControlService` - Main vessel control logic
 - `EngineControlService` - Engine operations
 - `SensorDataService` - Sensor data management
 - `ResilientVesselControlService` - Resilient wrapper
 
-**KChief.AlarmSystem:**
+**HMI.AlarmSystem:**
 - `AlarmService` - Basic alarm operations
 - `EnhancedAlarmService` - Enhanced with rules, escalation, grouping
 - `AlarmRuleEngine` - Rule evaluation engine
@@ -174,7 +174,7 @@ The **K-Chief Marine Automation Platform** is a comprehensive, enterprise-grade 
 - `AlarmGroupingService` - Alarm grouping and correlation
 - `AlarmHistoryService` - Alarm history and trends
 
-#### 3. Domain Layer (`KChief.Platform.Core`)
+#### 3. Domain Layer (`HMI.Platform.Core`)
 
 **Models:**
 - `Vessel` - Vessel entity
@@ -234,7 +234,7 @@ The **K-Chief Marine Automation Platform** is a comprehensive, enterprise-grade 
 
 #### 4. Infrastructure Layer
 
-**KChief.DataAccess:**
+**HMI.DataAccess:**
 - `ApplicationDbContext` - EF Core context
 - `Repository<T>` - Generic repository
 - `VesselRepository` - Vessel repository
@@ -242,11 +242,11 @@ The **K-Chief Marine Automation Platform** is a comprehensive, enterprise-grade 
 - `UnitOfWork` - Unit of Work pattern
 - `MessageBusService` - Message bus implementation
 
-**KChief.Protocols.OPC:**
+**HMI.Protocols.OPC:**
 - `OPCUaClientService` - OPC UA client
 - `OPCUaConnectionPool` - OPC UA connection pool
 
-**KChief.Protocols.Modbus:**
+**HMI.Protocols.Modbus:**
 - `ModbusClientService` - Modbus client
 - `ModbusConnectionPool` - Modbus connection pool
 
@@ -661,9 +661,9 @@ The **K-Chief Marine Automation Platform** is a comprehensive, enterprise-grade 
 ### Project Structure
 
 ```
-K-Chief-Marine-Automation-Platform/
+HMI-Marine-Automation-Platform/
 ├── src/
-│   ├── KChief.Platform.Core/              # Core domain layer
+│   ├── HMI.Platform.Core/              # Core domain layer
 │   │   ├── Models/                        # Domain models
 │   │   ├── Interfaces/                    # Service interfaces
 │   │   ├── Exceptions/                    # Custom exceptions
@@ -676,7 +676,7 @@ K-Chief-Marine-Automation-Platform/
 │   │   ├── Telemetry/                     # Telemetry interfaces
 │   │   └── Middleware/                    # Base middleware
 │   │
-│   ├── KChief.Platform.API/                # Presentation layer
+│   ├── HMI.Platform.API/                # Presentation layer
 │   │   ├── Controllers/                   # API controllers
 │   │   ├── Services/                      # Application services
 │   │   │   ├── Background/                # Background services
@@ -693,28 +693,28 @@ K-Chief-Marine-Automation-Platform/
 │   │   ├── Swagger/                       # Swagger configuration
 │   │   └── Resilience/                    # Resilience patterns
 │   │
-│   ├── KChief.DataAccess/                  # Data access layer
+│   ├── HMI.DataAccess/                  # Data access layer
 │   │   ├── Data/                          # DbContext
 │   │   ├── Repositories/                  # Repository implementations
 │   │   ├── Interfaces/                    # Repository interfaces
 │   │   ├── Services/                      # Data services
 │   │   └── Migrations/                    # EF Core migrations
 │   │
-│   ├── KChief.VesselControl/              # Vessel control logic
+│   ├── HMI.VesselControl/              # Vessel control logic
 │   │   ├── Services/                      # Control services
 │   │   └── Legacy/                        # Legacy code examples
 │   │
-│   ├── KChief.AlarmSystem/                # Alarm system
+│   ├── HMI.AlarmSystem/                # Alarm system
 │   │   └── Services/                      # Alarm services
 │   │
-│   ├── KChief.Protocols.OPC/              # OPC UA protocol
+│   ├── HMI.Protocols.OPC/              # OPC UA protocol
 │   │   └── Services/                      # OPC UA services
 │   │
-│   └── KChief.Protocols.Modbus/           # Modbus protocol
+│   └── HMI.Protocols.Modbus/           # Modbus protocol
 │       └── Services/                      # Modbus services
 │
 ├── tests/
-│   ├── KChief.Platform.Tests/             # Unit tests
+│   ├── HMI.Platform.Tests/             # Unit tests
 │   │   ├── TestHelpers/                   # Test utilities
 │   │   │   ├── TestFixtures/              # Test fixtures
 │   │   │   ├── Builders/                  # Test builders
@@ -724,7 +724,7 @@ K-Chief-Marine-Automation-Platform/
 │   │   │   └── DataGenerators/            # Data generators
 │   │   └── Examples/                      # Example tests
 │   │
-│   └── KChief.Integration.Tests/          # Integration tests
+│   └── HMI.Integration.Tests/          # Integration tests
 │       └── Controllers/                   # Controller tests
 │
 ├── docs/                                   # Documentation
@@ -1486,7 +1486,7 @@ var vessel = VesselBuilder.Create()
 
 ## Conclusion
 
-The K-Chief Marine Automation Platform is a comprehensive, enterprise-grade solution demonstrating:
+The HMI Marine Automation Platform is a comprehensive, enterprise-grade solution demonstrating:
 
 - **Modern Architecture**: Clean, modular, scalable
 - **Best Practices**: SOLID, design patterns, async/await
@@ -1517,5 +1517,5 @@ This platform serves as an excellent example of modern .NET development practice
 
 **Last Updated**: 2024-01-15  
 **Version**: 1.0.0  
-**Maintainer**: K-Chief Development Team
+**Maintainer**: HMI Development Team
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The K-Chief Marine Automation Platform API provides comprehensive RESTful endpoints for managing marine vessel automation systems. This guide covers authentication, endpoints, request/response formats, error handling, and best practices.
+The HMI Marine Automation Platform API provides comprehensive RESTful endpoints for managing marine vessel automation systems. This guide covers authentication, endpoints, request/response formats, error handling, and best practices.
 
 ## Base URL
 
@@ -493,16 +493,16 @@ X-Correlation-ID: abc123def456
 ### .NET
 
 ```csharp
-var client = new KChiefApiClient("https://api.kchief.com", "your-api-key");
+var client = new HMIApiClient("https://api.kchief.com", "your-api-key");
 var vessels = await client.Vessels.GetAllAsync();
 ```
 
 ### JavaScript/TypeScript
 
 ```typescript
-import { KChiefClient } from '@kchief/api-client';
+import { HMIClient } from '@kchief/api-client';
 
-const client = new KChiefClient({
+const client = new HMIClient({
   baseUrl: 'https://api.kchief.com',
   apiKey: 'your-api-key'
 });

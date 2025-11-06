@@ -2,14 +2,14 @@
 
 ## Overview
 
-The K-Chief Marine Automation Platform includes a comprehensive set of reusable components, frameworks, and utilities that promote code reuse, consistency, and maintainability across the entire application.
+The HMI Marine Automation Platform includes a comprehensive set of reusable components, frameworks, and utilities that promote code reuse, consistency, and maintainability across the entire application.
 
 ## Architecture
 
 ### Component Organization
 
 ```
-KChief.Platform.Core/
+HMI.Platform.Core/
 ├── Validation/          # Shared validation framework
 ├── Extensions/          # Extension methods library
 ├── Services/            # Base classes for services
@@ -23,7 +23,7 @@ KChief.Platform.Core/
 
 Base class for FluentValidation validators with common validation rules.
 
-**Location:** `KChief.Platform.Core/Validation/BaseValidator.cs`
+**Location:** `HMI.Platform.Core/Validation/BaseValidator.cs`
 
 **Features:**
 - Common validation methods
@@ -69,7 +69,7 @@ public class VesselRequestValidator : BaseValidator<VesselRequest>
 
 Extension methods for DateTime operations.
 
-**Location:** `KChief.Platform.Core/Extensions/DateTimeExtensions.cs`
+**Location:** `HMI.Platform.Core/Extensions/DateTimeExtensions.cs`
 
 **Features:**
 - Unix timestamp conversion
@@ -99,7 +99,7 @@ var duration = TimeSpan.FromMinutes(90).ToDurationString(); // "1h 30m"
 
 Extension methods for string operations.
 
-**Location:** `KChief.Platform.Core/Extensions/StringExtensions.cs`
+**Location:** `HMI.Platform.Core/Extensions/StringExtensions.cs`
 
 **Features:**
 - Case conversion (camelCase, PascalCase, kebab-case, snake_case)
@@ -131,7 +131,7 @@ var isValid = "vessel-001".MatchesPattern(@"^vessel-\d{3}$");
 
 Extension methods for collections.
 
-**Location:** `KChief.Platform.Core/Extensions/CollectionExtensions.cs`
+**Location:** `HMI.Platform.Core/Extensions/CollectionExtensions.cs`
 
 **Features:**
 - Null/empty checks
@@ -168,7 +168,7 @@ var nonNull = collection.WhereNotNull();
 
 Base class for services with common functionality.
 
-**Location:** `KChief.Platform.Core/Services/BaseService.cs`
+**Location:** `HMI.Platform.Core/Services/BaseService.cs`
 
 **Features:**
 - Automatic logging
@@ -210,7 +210,7 @@ public class MyService : BaseService
 
 Base class for repositories with common functionality.
 
-**Location:** `KChief.Platform.Core/Services/BaseRepository.cs`
+**Location:** `HMI.Platform.Core/Services/BaseRepository.cs`
 
 **Features:**
 - ID validation
@@ -237,7 +237,7 @@ public class MyRepository : BaseRepository
 
 Base class for middleware with common functionality.
 
-**Location:** `KChief.Platform.Core/Middleware/BaseMiddleware.cs`
+**Location:** `HMI.Platform.Core/Middleware/BaseMiddleware.cs`
 
 **Features:**
 - Correlation ID handling
@@ -287,7 +287,7 @@ public class MyMiddleware : BaseMiddleware
 
 Guard clauses for parameter validation.
 
-**Location:** `KChief.Platform.Core/Utilities/Guard.cs`
+**Location:** `HMI.Platform.Core/Utilities/Guard.cs`
 
 **Usage Examples:**
 
@@ -314,7 +314,7 @@ Guard.Require(condition, "Required condition not met");
 
 Helper for JSON serialization/deserialization.
 
-**Location:** `KChief.Platform.Core/Utilities/JsonHelper.cs`
+**Location:** `HMI.Platform.Core/Utilities/JsonHelper.cs`
 
 **Usage Examples:**
 
@@ -341,7 +341,7 @@ var clone = JsonHelper.Clone(original);
 
 Utility for generating unique identifiers.
 
-**Location:** `KChief.Platform.Core/Utilities/IdGenerator.cs`
+**Location:** `HMI.Platform.Core/Utilities/IdGenerator.cs`
 
 **Usage Examples:**
 
@@ -363,7 +363,7 @@ var correlationId = IdGenerator.GenerateCorrelationId(); // "abc123def456"
 
 Helper for HTTP client operations.
 
-**Location:** `KChief.Platform.Core/Utilities/HttpClientHelper.cs`
+**Location:** `HMI.Platform.Core/Utilities/HttpClientHelper.cs`
 
 **Usage Examples:**
 
@@ -392,7 +392,7 @@ await HttpClientHelper.DeleteAsync(client, "/endpoint");
 
 Helper for validation operations.
 
-**Location:** `KChief.Platform.Core/Utilities/ValidationHelper.cs`
+**Location:** `HMI.Platform.Core/Utilities/ValidationHelper.cs`
 
 **Usage Examples:**
 
@@ -422,7 +422,7 @@ if (!result.IsValid)
 
 Helper for reflection operations.
 
-**Location:** `KChief.Platform.Core/Utilities/ReflectionHelper.cs`
+**Location:** `HMI.Platform.Core/Utilities/ReflectionHelper.cs`
 
 **Usage Examples:**
 
@@ -510,7 +510,7 @@ return await ExecuteWithLoggingAsync(
 ### Using BaseValidator
 
 ```csharp
-using KChief.Platform.Core.Validation;
+using HMI.Platform.Core.Validation;
 
 public class CreateVesselValidator : BaseValidator<CreateVesselRequest>
 {
@@ -526,7 +526,7 @@ public class CreateVesselValidator : BaseValidator<CreateVesselRequest>
 ### Using Extension Methods
 
 ```csharp
-using KChief.Platform.Core.Extensions;
+using HMI.Platform.Core.Extensions;
 
 var relativeTime = alarm.TriggeredAt.ToRelativeTimeString();
 var maskedPassword = password.Mask(4);
@@ -536,7 +536,7 @@ var batches = alarms.Batch(100);
 ### Using Guard Clauses
 
 ```csharp
-using KChief.Platform.Core.Utilities;
+using HMI.Platform.Core.Utilities;
 
 public void Process(string id, int value)
 {
@@ -549,7 +549,7 @@ public void Process(string id, int value)
 ### Using BaseService
 
 ```csharp
-using KChief.Platform.Core.Services;
+using HMI.Platform.Core.Services;
 
 public class VesselService : BaseService
 {
@@ -569,7 +569,7 @@ public class VesselService : BaseService
 
 ### Cross-Project Usage
 
-All components in `KChief.Platform.Core` are designed to be reusable across projects:
+All components in `HMI.Platform.Core` are designed to be reusable across projects:
 
 - **Validation Framework**: Use in any project requiring validation
 - **Extension Methods**: Available throughout the solution

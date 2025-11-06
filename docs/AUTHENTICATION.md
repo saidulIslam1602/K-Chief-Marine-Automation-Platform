@@ -2,7 +2,7 @@
 
 ## Overview
 
-The K-Chief Marine Automation Platform API supports two authentication methods:
+The HMI Marine Automation Platform API supports two authentication methods:
 1. **JWT Bearer Token** - Recommended for user applications
 2. **API Key** - Recommended for server-to-server communication
 

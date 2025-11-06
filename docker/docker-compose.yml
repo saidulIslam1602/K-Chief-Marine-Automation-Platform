@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  kchief-api:
+  hmi-api:
     build:
       context: ..
       dockerfile: docker/Dockerfile
@@ -10,9 +10,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__DefaultConnection=Data Source=/app/data/KChiefMarineAutomationPlatform.db
+      - ConnectionStrings__DefaultConnection=Data Source=/app/data/HMIMarineAutomationPlatform.db
     volumes:
-      - kchief-data:/app/data
+      - hmi-data:/app/data
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
@@ -21,7 +21,7 @@ services:
       start_period: 10s
     restart: unless-stopped
     networks:
-      - kchief-network
+      - hmi-network
 
   # Optional: Add RabbitMQ for message bus (uncomment if needed)
   # rabbitmq:
@@ -35,7 +35,7 @@ services:
   #   volumes:
   #     - rabbitmq-data:/var/lib/rabbitmq
   #   networks:
-  #     - kchief-network
+  #     - hmi-network
 
   # Optional: Add Prometheus for metrics collection (uncomment if needed)
   # prometheus:
@@ -52,7 +52,7 @@ services:
   #     - '--web.console.templates=/etc/prometheus/consoles'
   #     - '--web.enable-lifecycle'
   #   networks:
-  #     - kchief-network
+  #     - hmi-network
 
   # Optional: Add Grafana for monitoring dashboards (uncomment if needed)
   # grafana:
@@ -64,14 +64,14 @@ services:
   #   volumes:
   #     - grafana-data:/var/lib/grafana
   #   networks:
-  #     - kchief-network
+  #     - hmi-network
 
 volumes:
-  kchief-data:
+  hmi-data:
   # rabbitmq-data:
   # prometheus-data:
   # grafana-data:
 
 networks:
-  kchief-network:
+  hmi-network:
     driver: bridge

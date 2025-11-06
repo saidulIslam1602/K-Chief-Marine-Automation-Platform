@@ -2,7 +2,7 @@
 
 ## Overview
 
-The K-Chief Marine Automation Platform includes comprehensive telemetry and performance monitoring capabilities using Application Insights, custom metrics, distributed tracing, and performance profiling.
+The HMI Marine Automation Platform includes comprehensive telemetry and performance monitoring capabilities using Application Insights, custom metrics, distributed tracing, and performance profiling.
 
 ## Architecture
 

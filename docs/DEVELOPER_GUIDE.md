@@ -12,18 +12,18 @@
 ### Project Structure
 
 ```
-K-Chief-Marine-Automation-Platform/
+HMI-Marine-Automation-Platform/
 ├── src/
-│   ├── KChief.Platform.Core/      # Domain models and interfaces
-│   ├── KChief.Platform.API/        # REST API
-│   ├── KChief.VesselControl/       # Vessel control logic
-│   ├── KChief.AlarmSystem/         # Alarm management
-│   ├── KChief.DataAccess/          # Data access and message bus
-│   ├── KChief.Protocols.OPC/       # OPC UA integration
-│   └── KChief.Protocols.Modbus/    # Modbus integration
+│   ├── HMI.Platform.Core/      # Domain models and interfaces
+│   ├── HMI.Platform.API/        # REST API
+│   ├── HMI.VesselControl/       # Vessel control logic
+│   ├── HMI.AlarmSystem/         # Alarm management
+│   ├── HMI.DataAccess/          # Data access and message bus
+│   ├── HMI.Protocols.OPC/       # OPC UA integration
+│   └── HMI.Protocols.Modbus/    # Modbus integration
 ├── tests/
-│   ├── KChief.Platform.Tests/      # Unit tests
-│   └── KChief.Integration.Tests/   # Integration tests
+│   ├── HMI.Platform.Tests/      # Unit tests
+│   └── HMI.Integration.Tests/   # Integration tests
 └── docs/                           # Documentation
 ```
 

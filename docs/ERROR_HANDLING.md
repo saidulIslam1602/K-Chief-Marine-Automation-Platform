@@ -2,7 +2,7 @@
 
 ## Overview
 
-The K-Chief Marine Automation Platform implements comprehensive error handling and exception management following industry best practices. The system provides standardized error responses, detailed logging with correlation tracking, and graceful error recovery mechanisms.
+The HMI Marine Automation Platform implements comprehensive error handling and exception management following industry best practices. The system provides standardized error responses, detailed logging with correlation tracking, and graceful error recovery mechanisms.
 
 ## Architecture
 
@@ -10,7 +10,7 @@ The K-Chief Marine Automation Platform implements comprehensive error handling a
 
 ```
 Exception
-└── KChiefException (Base for all platform exceptions)
+└── HMIException (Base for all platform exceptions)
     ├── VesselNotFoundException
     ├── EngineNotFoundException
     ├── VesselOperationException
@@ -28,18 +28,18 @@ Exception
 
 ## Custom Exception Types
 
-### KChiefException (Base Class)
+### HMIException (Base Class)
 
 Base exception class for all platform-specific exceptions.
 
 ```csharp
-public abstract class KChiefException : Exception
+public abstract class HMIException : Exception
 {
     public abstract string ErrorCode { get; }
     public Dictionary<string, object> Context { get; }
     
-    public KChiefException WithContext(string key, object value);
-    public KChiefException WithContext(Dictionary<string, object> contextData);
+    public HMIException WithContext(string key, object value);
+    public HMIException WithContext(Dictionary<string, object> contextData);
 }
 ```
 
@@ -480,4 +480,4 @@ Recommended alerting thresholds:
 - Log aggregation supports multiple application instances
 - Error handling is stateless and thread-safe
 
-This comprehensive error handling system ensures robust, maintainable, and observable error management throughout the K-Chief Marine Automation Platform.
+This comprehensive error handling system ensures robust, maintainable, and observable error management throughout the HMI Marine Automation Platform.

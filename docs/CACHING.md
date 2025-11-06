@@ -2,7 +2,7 @@
 
 ## Overview
 
-The K-Chief Marine Automation Platform implements comprehensive caching strategies to optimize performance, reduce database load, and improve response times. The caching system supports both in-memory and distributed caching (Redis) with intelligent cache invalidation strategies.
+The HMI Marine Automation Platform implements comprehensive caching strategies to optimize performance, reduce database load, and improve response times. The caching system supports both in-memory and distributed caching (Redis) with intelligent cache invalidation strategies.
 
 ## Architecture
 

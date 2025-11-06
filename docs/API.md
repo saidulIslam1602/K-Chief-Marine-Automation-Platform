@@ -1,4 +1,4 @@
-# K-Chief Marine Automation Platform - API Documentation
+# HMI Marine Automation Platform - API Documentation
 
 ## Base URL
 

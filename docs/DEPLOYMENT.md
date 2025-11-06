@@ -10,8 +10,8 @@
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/saidulIslam1602/K-Chief-Marine-Automation-Platform.git
-cd K-Chief-Marine-Automation-Platform
+git clone https://github.com/saidulIslam1602/HMI-Marine-Automation-Platform.git
+cd HMI-Marine-Automation-Platform
 ```
 
 ### 2. Restore Dependencies
@@ -31,7 +31,7 @@ dotnet test
 
 ### 5. Run API
 ```bash
-cd src/KChief.Platform.API
+cd src/HMI.Platform.API
 dotnet run
 ```
 

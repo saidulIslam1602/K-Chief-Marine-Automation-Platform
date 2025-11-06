@@ -3,27 +3,27 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 # Copy project files for dependency restoration
-COPY ["src/KChief.Platform.Core/KChief.Platform.Core.csproj", "src/KChief.Platform.Core/"]
-COPY ["src/KChief.Platform.API/KChief.Platform.API.csproj", "src/KChief.Platform.API/"]
-COPY ["src/KChief.DataAccess/KChief.DataAccess.csproj", "src/KChief.DataAccess/"]
-COPY ["src/KChief.VesselControl/KChief.VesselControl.csproj", "src/KChief.VesselControl/"]
-COPY ["src/KChief.AlarmSystem/KChief.AlarmSystem.csproj", "src/KChief.AlarmSystem/"]
-COPY ["src/KChief.Protocols.OPC/KChief.Protocols.OPC.csproj", "src/KChief.Protocols.OPC/"]
-COPY ["src/KChief.Protocols.Modbus/KChief.Protocols.Modbus.csproj", "src/KChief.Protocols.Modbus/"]
+COPY ["src/HMI.Platform.Core/HMI.Platform.Core.csproj", "src/HMI.Platform.Core/"]
+COPY ["src/HMI.Platform.API/HMI.Platform.API.csproj", "src/HMI.Platform.API/"]
+COPY ["src/HMI.DataAccess/HMI.DataAccess.csproj", "src/HMI.DataAccess/"]
+COPY ["src/HMI.VesselControl/HMI.VesselControl.csproj", "src/HMI.VesselControl/"]
+COPY ["src/HMI.AlarmSystem/HMI.AlarmSystem.csproj", "src/HMI.AlarmSystem/"]
+COPY ["src/HMI.Protocols.OPC/HMI.Protocols.OPC.csproj", "src/HMI.Protocols.OPC/"]
+COPY ["src/HMI.Protocols.Modbus/HMI.Protocols.Modbus.csproj", "src/HMI.Protocols.Modbus/"]
 
 # Restore dependencies for the main API project (this will restore all dependencies)
-RUN dotnet restore "src/KChief.Platform.API/KChief.Platform.API.csproj"
+RUN dotnet restore "src/HMI.Platform.API/HMI.Platform.API.csproj"
 
 # Copy all source files (excluding tests and other non-essential files)
 COPY ["src/", "src/"]
 
 # Build the API project
-WORKDIR "/src/src/KChief.Platform.API"
-RUN dotnet build "KChief.Platform.API.csproj" -c Release -o /app/build --no-restore
+WORKDIR "/src/src/HMI.Platform.API"
+RUN dotnet build "HMI.Platform.API.csproj" -c Release -o /app/build --no-restore
 
 # Publish stage
 FROM build AS publish
-RUN dotnet publish "KChief.Platform.API.csproj" -c Release -o /app/publish /p:UseAppHost=false --no-restore
+RUN dotnet publish "HMI.Platform.API.csproj" -c Release -o /app/publish /p:UseAppHost=false --no-restore
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
@@ -56,5 +56,5 @@ COPY --from=publish --chown=appuser:appuser /app/publish .
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:8080/health || exit 1
 
-ENTRYPOINT ["dotnet", "KChief.Platform.API.dll"]
+ENTRYPOINT ["dotnet", "HMI.Platform.API.dll"]
 

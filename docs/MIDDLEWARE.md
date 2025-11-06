@@ -2,7 +2,7 @@
 
 ## Overview
 
-The K-Chief Marine Automation Platform implements a comprehensive middleware pipeline for handling cross-cutting concerns including request validation, rate limiting, logging, performance monitoring, and response caching. This document describes all middleware components and their configuration.
+The HMI Marine Automation Platform implements a comprehensive middleware pipeline for handling cross-cutting concerns including request validation, rate limiting, logging, performance monitoring, and response caching. This document describes all middleware components and their configuration.
 
 ## Middleware Pipeline Order
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The K-Chief Marine Automation Platform uses Entity Framework Core with SQLite for data persistence. The implementation follows the Repository and Unit of Work patterns to provide a clean separation between the data access layer and business logic.
+The HMI Marine Automation Platform uses Entity Framework Core with SQLite for data persistence. The implementation follows the Repository and Unit of Work patterns to provide a clean separation between the data access layer and business logic.
 
 ## Architecture
 
@@ -28,7 +28,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Data Source=KChiefMarineAutomationPlatform_Dev.db"
+    "DefaultConnection": "Data Source=HMIMarineAutomationPlatform_Dev.db"
   }
 }
 ```
@@ -37,7 +37,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=your-server;Database=KChiefMarineAutomationPlatform;Trusted_Connection=true;MultipleActiveResultSets=true;TrustServerCertificate=true"
+    "DefaultConnection": "Server=your-server;Database=HMIMarineAutomationPlatform;Trusted_Connection=true;MultipleActiveResultSets=true;TrustServerCertificate=true"
   }
 }
 ```
@@ -130,25 +130,25 @@ public class DatabaseVesselControlService : IVesselControlService
 
 ```bash
 # Create a new migration
-dotnet ef migrations add MigrationName --project src/KChief.DataAccess
+dotnet ef migrations add MigrationName --project src/HMI.DataAccess
 
 # Apply migrations to database
-dotnet ef database update --project src/KChief.DataAccess
+dotnet ef database update --project src/HMI.DataAccess
 
 # Remove last migration
-dotnet ef migrations remove --project src/KChief.DataAccess
+dotnet ef migrations remove --project src/HMI.DataAccess
 ```
 
 ### Migration Commands from API Project
 
 ```bash
-cd src/KChief.Platform.API
+cd src/HMI.Platform.API
 
 # Create migration
-dotnet ef migrations add MigrationName --project ../KChief.DataAccess/KChief.DataAccess.csproj
+dotnet ef migrations add MigrationName --project ../HMI.DataAccess/HMI.DataAccess.csproj
 
 # Update database
-dotnet ef database update --project ../KChief.DataAccess/KChief.DataAccess.csproj
+dotnet ef database update --project ../HMI.DataAccess/HMI.DataAccess.csproj
 ```
 
 ## Data Seeding

@@ -1,6 +1,6 @@
 # Legacy Code Modernization Guide
 
-This document demonstrates the modernization of legacy code in the K-Chief Marine Automation Platform.
+This document demonstrates the modernization of legacy code in the HMI Marine Automation Platform.
 
 ## Overview
 
@@ -8,7 +8,7 @@ The platform includes examples of legacy code and its modernized equivalent to d
 
 ## Legacy Code Example
 
-**Location:** `src/KChief.VesselControl/Legacy/LegacyVesselController.cs`
+**Location:** `src/HMI.VesselControl/Legacy/LegacyVesselController.cs`
 
 ### Problems Identified
 
@@ -49,7 +49,7 @@ The platform includes examples of legacy code and its modernized equivalent to d
 
 ## Modernized Code Example
 
-**Location:** `src/KChief.VesselControl/Services/ModernizedVesselController.cs`
+**Location:** `src/HMI.VesselControl/Services/ModernizedVesselController.cs`
 
 ### Improvements Made
 

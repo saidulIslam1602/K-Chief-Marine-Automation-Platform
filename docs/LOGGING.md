@@ -2,7 +2,7 @@
 
 ## Overview
 
-The K-Chief Marine Automation Platform implements comprehensive structured logging using Serilog, providing rich, searchable, and actionable log data across all application components. This implementation demonstrates production-grade logging practices with correlation tracking, multiple sinks, and contextual enrichment.
+The HMI Marine Automation Platform implements comprehensive structured logging using Serilog, providing rich, searchable, and actionable log data across all application components. This implementation demonstrates production-grade logging practices with correlation tracking, multiple sinks, and contextual enrichment.
 
 ## Architecture
 
@@ -43,7 +43,7 @@ The logging configuration is defined in `appsettings.json` with environment-spec
         "Microsoft": "Warning",
         "Microsoft.AspNetCore": "Warning",
         "System": "Warning",
-        "KChief": "Information"
+        "HMI": "Information"
       }
     },
     "WriteTo": [
@@ -88,13 +88,13 @@ The logging configuration is defined in `appsettings.json` with environment-spec
 ### Environment-Specific Configuration
 
 #### Development
-- **Log Level**: Debug for K-Chief components, Information for Microsoft
+- **Log Level**: Debug for HMI components, Information for Microsoft
 - **Console Output**: Colored with correlation IDs
 - **File Output**: Daily rolling files in `logs/dev/`
 - **Retention**: 7 days
 
 #### Production
-- **Log Level**: Information for K-Chief, Warning for Microsoft
+- **Log Level**: Information for HMI, Warning for Microsoft
 - **Console Output**: Structured without colors
 - **File Output**: Daily rolling files in `/app/logs/`
 - **Application Insights**: Enabled with telemetry
@@ -192,7 +192,7 @@ public void LogException(Exception exception, HttpContext? httpContext = null, s
     using (LogContext.PushProperty("CorrelationId", correlationId))
     using (LogContext.PushProperty("ExceptionType", exception.GetType().Name))
     {
-        if (exception is KChiefException kchiefEx)
+        if (exception is HMIException kchiefEx)
         {
             using (LogContext.PushProperty("ErrorCode", kchiefEx.ErrorCode))
             using (LogContext.PushProperty("ExceptionContext", kchiefEx.Context, destructureObjects: true))
@@ -206,7 +206,7 @@ public void LogException(Exception exception, HttpContext? httpContext = null, s
 
 ### Features
 
-- **Custom Exception Support**: Special handling for `KChiefException` types
+- **Custom Exception Support**: Special handling for `HMIException` types
 - **Rich Context**: Includes error codes, custom context data
 - **Request Context**: HTTP request details when available
 - **Client Information**: IP address, user agent, user identity
@@ -546,4 +546,4 @@ Logging integrates with the performance monitoring system to provide comprehensi
 - **Production**: `/app/logs/kchief-YYYYMMDD.log`
 - **Structured JSON**: `logs/kchief-structured-YYYYMMDD.json`
 
-This comprehensive logging implementation provides the foundation for production-grade observability, enabling effective monitoring, debugging, and operational insights for the K-Chief Marine Automation Platform.
+This comprehensive logging implementation provides the foundation for production-grade observability, enabling effective monitoring, debugging, and operational insights for the HMI Marine Automation Platform.
