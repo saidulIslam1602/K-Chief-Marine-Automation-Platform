@@ -55,7 +55,7 @@ public abstract class BaseValidator<T> : AbstractValidator<T>
         where TProperty : IComparable<TProperty>
     {
         return ruleBuilder
-            .InclusiveBetween(min, max)
+            .Must(value => value != null && value.CompareTo(min) >= 0 && value.CompareTo(max) <= 0)
             .WithMessage($"{fieldName} must be between {min} and {max}")
             .WithErrorCode($"{fieldName.ToUpperInvariant()}_RANGE");
     }
@@ -70,7 +70,7 @@ public abstract class BaseValidator<T> : AbstractValidator<T>
         where TProperty : IComparable<TProperty>
     {
         return ruleBuilder
-            .GreaterThan(threshold)
+            .Must(value => value != null && value.CompareTo(threshold) > 0)
             .WithMessage($"{fieldName} must be greater than {threshold}")
             .WithErrorCode($"{fieldName.ToUpperInvariant()}_MIN_VALUE");
     }
@@ -85,7 +85,7 @@ public abstract class BaseValidator<T> : AbstractValidator<T>
         where TProperty : IComparable<TProperty>
     {
         return ruleBuilder
-            .LessThan(threshold)
+            .Must(value => value != null && value.CompareTo(threshold) < 0)
             .WithMessage($"{fieldName} must be less than {threshold}")
             .WithErrorCode($"{fieldName.ToUpperInvariant()}_MAX_VALUE");
     }

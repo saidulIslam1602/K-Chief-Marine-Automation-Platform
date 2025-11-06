@@ -8,7 +8,7 @@ namespace KChief.Platform.Core.ConnectionPooling;
 /// </summary>
 public class ConnectionRetryPolicy
 {
-    private readonly RetryPolicy _retryPolicy;
+    private readonly AsyncRetryPolicy _retryPolicy;
 
     public ConnectionRetryPolicy(int maxRetries = 3, TimeSpan? delay = null)
     {
