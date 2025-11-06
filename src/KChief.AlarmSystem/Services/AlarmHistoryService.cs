@@ -61,11 +61,7 @@ public class AlarmHistoryService
             histories.Add(history);
         }
 
-        using (LogContext.PushProperty("AlarmId", alarmId))
-        using (LogContext.PushProperty("EventType", eventType))
-        {
-            Log.Debug("Alarm history event recorded: {AlarmId} - {EventType}", alarmId, eventType);
-        }
+        _logger.LogDebug("Alarm history event recorded: {AlarmId} - {EventType}", alarmId, eventType);
     }
 
     /// <summary>

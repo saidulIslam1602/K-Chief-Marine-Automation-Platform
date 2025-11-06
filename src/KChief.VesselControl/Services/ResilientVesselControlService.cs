@@ -2,7 +2,6 @@ using Microsoft.Extensions.Logging;
 using KChief.Platform.Core.Interfaces;
 using KChief.Platform.Core.Models;
 using KChief.Platform.Core.Exceptions;
-using KChief.Platform.API.Services;
 
 namespace KChief.VesselControl.Services;
 
@@ -12,8 +11,7 @@ namespace KChief.VesselControl.Services;
 /// </summary>
 public class ResilientVesselControlService : IVesselControlService
 {
-    private readonly VesselControlService _baseService;
-    private readonly ResilienceService _resilienceService;
+    private readonly IVesselControlService _baseService;
     private readonly ILogger<ResilientVesselControlService> _logger;
 
     // Fallback data for when primary service is unavailable
@@ -34,27 +32,25 @@ public class ResilientVesselControlService : IVesselControlService
     };
 
     public ResilientVesselControlService(
-        VesselControlService baseService,
-        ResilienceService resilienceService,
+        IVesselControlService baseService,
         ILogger<ResilientVesselControlService> logger)
     {
         _baseService = baseService;
-        _resilienceService = resilienceService;
         _logger = logger;
     }
 
-    public async Task<IEnumerable<Vessel>> GetVesselsAsync()
+    public async Task<IEnumerable<Vessel>> GetAllVesselsAsync()
     {
-        return await _resilienceService.ExecuteVesselControlAsync(
-            async (context, cancellationToken) =>
-            {
-                using (LogContext.PushProperty("Operation", "GetVessels"))
-                {
-                    Log.Debug("Executing GetVessels operation");
-                    return await _baseService.GetVesselsAsync();
-                }
-            },
-            "GetVessels");
+        try
+        {
+            _logger.LogDebug("Executing GetAllVessels operation");
+            return await _baseService.GetAllVesselsAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to get vessels, returning fallback data");
+            return _fallbackVessels.Values;
+        }
     }
 
     public async Task<Vessel?> GetVesselByIdAsync(string vesselId)
@@ -337,6 +333,46 @@ public class ResilientVesselControlService : IVesselControlService
                     .WithContext("Operation", "EmergencyStop")
                     .WithContext("Severity", "Critical");
             }
+        }
+    }
+
+    // Missing interface methods
+    public async Task<Engine?> GetEngineByIdAsync(string vesselId, string engineId)
+    {
+        try
+        {
+            return await _baseService.GetEngineByIdAsync(vesselId, engineId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to get engine {EngineId} for vessel {VesselId}", engineId, vesselId);
+            return null;
+        }
+    }
+
+    public async Task<bool> StartEngineAsync(string vesselId, string engineId)
+    {
+        try
+        {
+            return await _baseService.StartEngineAsync(vesselId, engineId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to start engine {EngineId} for vessel {VesselId}", engineId, vesselId);
+            return false;
+        }
+    }
+
+    public async Task<bool> StopEngineAsync(string vesselId, string engineId)
+    {
+        try
+        {
+            return await _baseService.StopEngineAsync(vesselId, engineId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to stop engine {EngineId} for vessel {VesselId}", engineId, vesselId);
+            return false;
         }
     }
 }

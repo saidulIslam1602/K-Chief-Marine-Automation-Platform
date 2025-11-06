@@ -53,10 +53,16 @@ public class CachedVesselRepository : IVesselRepository
         var cacheKey = $"vessel:{vesselId}";
 
         _logger.LogDebug("Getting vessel by ID: {VesselId}", vesselId);
-        return await _cacheService.GetOrSetAsync(
-            cacheKey,
-            async () => await _repository.GetByIdAsync(id),
-            _defaultExpiration);
+        var vessel = await _cacheService.GetAsync<Vessel>(cacheKey);
+        if (vessel != null)
+            return vessel;
+
+        vessel = await _repository.GetByIdAsync(id);
+        if (vessel != null)
+        {
+            await _cacheService.SetAsync(cacheKey, vessel, _defaultExpiration);
+        }
+        return vessel;
     }
 
     public async Task<Vessel?> GetFirstOrDefaultAsync(
@@ -196,10 +202,16 @@ public class CachedVesselRepository : IVesselRepository
     {
         var cacheKey = $"vessel:{vesselId}:withengines";
         
-        return await _cacheService.GetOrSetAsync(
-            cacheKey,
-            async () => await _repository.GetVesselWithEnginesAsync(vesselId),
-            _defaultExpiration);
+        var vessel = await _cacheService.GetAsync<Vessel>(cacheKey);
+        if (vessel != null)
+            return vessel;
+
+        vessel = await _repository.GetVesselWithEnginesAsync(vesselId);
+        if (vessel != null)
+        {
+            await _cacheService.SetAsync(cacheKey, vessel, _defaultExpiration);
+        }
+        return vessel;
     }
 }
 

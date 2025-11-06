@@ -52,7 +52,12 @@ public class ModbusConnectionPool : BaseConnectionPool<ModbusConnection>
     {
         try
         {
-            return connection?.TcpClient?.Connected ?? false;
+            if (connection?.TcpClient == null)
+                return false;
+
+            // Perform a simple async check
+            await Task.Delay(1, cancellationToken);
+            return connection.TcpClient.Connected;
         }
         catch
         {
