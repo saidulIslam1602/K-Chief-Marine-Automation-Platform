@@ -9,17 +9,13 @@ public class VesselBuilder
 {
     private string _id = "vessel-001";
     private string _name = "Test Vessel";
-    private string _imoNumber = "IMO1234567";
-    private string _callSign = "TEST";
-    private VesselType _type = VesselType.Cargo;
+    private string _type = "Container Ship";
+    private VesselStatus _status = VesselStatus.Online;
+    private string _location = "Port of Test";
     private double _length = 100.0;
     private double _width = 20.0;
-    private double _draft = 5.0;
-    private double _grossTonnage = 5000.0;
-    private string? _flag = "US";
-    private DateTime _builtDate = DateTime.UtcNow.AddYears(-10);
-    private string? _owner = "Test Owner";
-    private VesselStatus _status = VesselStatus.InService;
+    private double _maxSpeed = 25.0;
+    private List<Engine> _engines = new();
 
     public VesselBuilder WithId(string id)
     {
@@ -33,53 +29,40 @@ public class VesselBuilder
         return this;
     }
 
-    public VesselBuilder WithImoNumber(string imoNumber)
-    {
-        _imoNumber = imoNumber;
-        return this;
-    }
-
-    public VesselBuilder WithCallSign(string callSign)
-    {
-        _callSign = callSign;
-        return this;
-    }
-
-    public VesselBuilder WithType(VesselType type)
+    public VesselBuilder WithType(string type)
     {
         _type = type;
         return this;
     }
 
-    public VesselBuilder WithDimensions(double length, double width, double draft)
+    public VesselBuilder WithLocation(string location)
+    {
+        _location = location;
+        return this;
+    }
+
+    public VesselBuilder WithDimensions(double length, double width)
     {
         _length = length;
         _width = width;
-        _draft = draft;
         return this;
     }
 
-    public VesselBuilder WithGrossTonnage(double grossTonnage)
+    public VesselBuilder WithMaxSpeed(double maxSpeed)
     {
-        _grossTonnage = grossTonnage;
+        _maxSpeed = maxSpeed;
         return this;
     }
 
-    public VesselBuilder WithFlag(string flag)
+    public VesselBuilder WithEngines(List<Engine> engines)
     {
-        _flag = flag;
+        _engines = engines;
         return this;
     }
 
-    public VesselBuilder WithBuiltDate(DateTime builtDate)
+    public VesselBuilder AddEngine(Engine engine)
     {
-        _builtDate = builtDate;
-        return this;
-    }
-
-    public VesselBuilder WithOwner(string owner)
-    {
-        _owner = owner;
+        _engines.Add(engine);
         return this;
     }
 
@@ -91,31 +74,43 @@ public class VesselBuilder
 
     public VesselBuilder AsCargoVessel()
     {
-        _type = VesselType.Cargo;
+        _type = "Cargo Ship";
         return this;
     }
 
     public VesselBuilder AsTanker()
     {
-        _type = VesselType.Tanker;
+        _type = "Tanker";
         return this;
     }
 
     public VesselBuilder AsContainerShip()
     {
-        _type = VesselType.ContainerShip;
+        _type = "Container Ship";
         return this;
     }
 
-    public VesselBuilder InService()
+    public VesselBuilder AsCruiseShip()
     {
-        _status = VesselStatus.InService;
+        _type = "Cruise Ship";
         return this;
     }
 
-    public VesselBuilder OutOfService()
+    public VesselBuilder Online()
     {
-        _status = VesselStatus.OutOfService;
+        _status = VesselStatus.Online;
+        return this;
+    }
+
+    public VesselBuilder Offline()
+    {
+        _status = VesselStatus.Offline;
+        return this;
+    }
+
+    public VesselBuilder InMaintenance()
+    {
+        _status = VesselStatus.Maintenance;
         return this;
     }
 
@@ -125,19 +120,15 @@ public class VesselBuilder
         {
             Id = _id,
             Name = _name,
-            IMONumber = _imoNumber,
-            CallSign = _callSign,
             Type = _type,
+            Status = _status,
+            Location = _location,
             Length = _length,
             Width = _width,
-            Draft = _draft,
-            GrossTonnage = _grossTonnage,
-            Flag = _flag,
-            BuiltDate = _builtDate,
-            Owner = _owner,
-            Status = _status,
+            MaxSpeed = _maxSpeed,
+            Engines = _engines,
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            LastUpdated = DateTime.UtcNow
         };
     }
 
@@ -146,9 +137,7 @@ public class VesselBuilder
     public static VesselBuilder CreateDefault() => new()
         .WithId("vessel-001")
         .WithName("Test Vessel")
-        .WithImoNumber("IMO1234567")
-        .WithCallSign("TEST")
-        .AsCargoVessel()
-        .InService();
+        .AsContainerShip()
+        .Online();
 }
 

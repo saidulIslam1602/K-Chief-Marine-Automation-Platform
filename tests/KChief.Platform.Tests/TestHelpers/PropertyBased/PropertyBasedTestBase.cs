@@ -43,13 +43,13 @@ public abstract class PropertyBasedTestBase
                     Gen.Choose(1, DateTime.DaysInMonth(year, month))
                         .Select(day => new DateTime(year, month, day))));
 
-    protected static Gen<VesselType> VesselTypeGen => 
-        Gen.Elements(VesselType.Cargo, VesselType.Tanker, VesselType.ContainerShip, VesselType.Passenger);
+    protected static Gen<string> VesselTypeGen => 
+        Gen.Elements("Cargo Ship", "Tanker", "Container Ship", "Cruise Ship", "Bulk Carrier");
 
-    protected static Gen<EngineType> EngineTypeGen => 
-        Gen.Elements(EngineType.Diesel, EngineType.GasTurbine, EngineType.Electric);
+    protected static Gen<string> EngineTypeGen => 
+        Gen.Elements("Diesel", "Gas Turbine", "Electric", "Steam");
 
-    protected static Gen<AlarmSeverity> AlarmSeverityGen => 
-        Gen.Elements(AlarmSeverity.Info, AlarmSeverity.Warning, AlarmSeverity.Critical);
+    protected static Gen<string> AlarmSeverityGen => 
+        Gen.Elements("Info", "Warning", "Critical", "Emergency");
 }
 

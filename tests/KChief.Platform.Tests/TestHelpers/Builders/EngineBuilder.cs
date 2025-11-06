@@ -10,15 +10,14 @@ public class EngineBuilder
     private string _id = "engine-001";
     private string _vesselId = "vessel-001";
     private string _name = "Main Engine";
-    private EngineType _type = EngineType.Diesel;
-    private double _maxRpm = 1000.0;
-    private double _currentRpm = 0.0;
+    private string _type = "Diesel";
+    private int _maxRpm = 1000;
+    private int _rpm = 0;
     private EngineStatus _status = EngineStatus.Stopped;
     private double _temperature = 20.0;
-    private double _pressure = 1.0;
-    private string? _manufacturer = "Test Manufacturer";
-    private string? _model = "Test Model";
-    private DateTime _installedDate = DateTime.UtcNow.AddYears(-5);
+    private double _oilPressure = 1.0;
+    private double _fuelConsumption = 0.0;
+    private bool _isRunning = false;
 
     public EngineBuilder WithId(string id)
     {
@@ -38,21 +37,21 @@ public class EngineBuilder
         return this;
     }
 
-    public EngineBuilder WithType(EngineType type)
+    public EngineBuilder WithType(string type)
     {
         _type = type;
         return this;
     }
 
-    public EngineBuilder WithMaxRpm(double maxRpm)
+    public EngineBuilder WithMaxRpm(int maxRpm)
     {
         _maxRpm = maxRpm;
         return this;
     }
 
-    public EngineBuilder WithCurrentRpm(double currentRpm)
+    public EngineBuilder WithRpm(int rpm)
     {
-        _currentRpm = currentRpm;
+        _rpm = rpm;
         return this;
     }
 
@@ -68,53 +67,55 @@ public class EngineBuilder
         return this;
     }
 
-    public EngineBuilder WithPressure(double pressure)
+    public EngineBuilder WithOilPressure(double oilPressure)
     {
-        _pressure = pressure;
+        _oilPressure = oilPressure;
         return this;
     }
 
-    public EngineBuilder WithManufacturer(string manufacturer)
+    public EngineBuilder WithFuelConsumption(double fuelConsumption)
     {
-        _manufacturer = manufacturer;
+        _fuelConsumption = fuelConsumption;
         return this;
     }
 
-    public EngineBuilder WithModel(string model)
+    public EngineBuilder WithIsRunning(bool isRunning)
     {
-        _model = model;
-        return this;
-    }
-
-    public EngineBuilder WithInstalledDate(DateTime installedDate)
-    {
-        _installedDate = installedDate;
+        _isRunning = isRunning;
         return this;
     }
 
     public EngineBuilder AsDiesel()
     {
-        _type = EngineType.Diesel;
+        _type = "Diesel";
         return this;
     }
 
     public EngineBuilder AsGasTurbine()
     {
-        _type = EngineType.GasTurbine;
+        _type = "Gas Turbine";
+        return this;
+    }
+
+    public EngineBuilder AsElectric()
+    {
+        _type = "Electric";
         return this;
     }
 
     public EngineBuilder Running()
     {
         _status = EngineStatus.Running;
-        _currentRpm = _maxRpm * 0.8;
+        _isRunning = true;
+        _rpm = (int)(_maxRpm * 0.8);
         return this;
     }
 
     public EngineBuilder Stopped()
     {
         _status = EngineStatus.Stopped;
-        _currentRpm = 0.0;
+        _isRunning = false;
+        _rpm = 0;
         return this;
     }
 
@@ -133,16 +134,14 @@ public class EngineBuilder
             VesselId = _vesselId,
             Name = _name,
             Type = _type,
-            MaxRpm = _maxRpm,
-            CurrentRpm = _currentRpm,
+            MaxRPM = _maxRpm,
+            RPM = _rpm,
             Status = _status,
             Temperature = _temperature,
-            Pressure = _pressure,
-            Manufacturer = _manufacturer,
-            Model = _model,
-            InstalledDate = _installedDate,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            OilPressure = _oilPressure,
+            FuelConsumption = _fuelConsumption,
+            IsRunning = _isRunning,
+            LastUpdated = DateTime.UtcNow
         };
     }
 
