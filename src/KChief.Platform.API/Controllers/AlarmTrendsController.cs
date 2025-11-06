@@ -41,13 +41,9 @@ public class AlarmTrendsController : ControllerBase
         var start = startDate ?? DateTime.UtcNow.AddDays(-7);
         var end = endDate ?? DateTime.UtcNow;
 
-        using (LogContext.PushProperty("StartDate", start))
-        using (LogContext.PushProperty("EndDate", end))
-        {
-            var trend = _historyService.GetTrends(start, end);
-            Log.Information("Alarm trends retrieved for period {StartDate} to {EndDate}", start, end);
-            return Ok(trend);
-        }
+        var trend = _historyService.GetTrends(start, end);
+        _logger.LogInformation("Alarm trends retrieved for period {StartDate} to {EndDate}", start, end);
+        return Ok(trend);
     }
 
     /// <summary>

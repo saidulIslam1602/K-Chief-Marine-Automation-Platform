@@ -1,6 +1,5 @@
 using KChief.Platform.Core.Middleware;
 using KChief.Platform.Core.Utilities;
-using Serilog.Context;
 
 namespace KChief.Platform.API.Middleware;
 
@@ -34,14 +33,10 @@ public class CorrelationIdMiddleware : BaseMiddleware
         // Add to response headers
         context.Response.Headers.Append(CorrelationIdHeaderName, correlationId);
         
-        // Push to Serilog LogContext for structured logging
-        using (CreateLogContext(context, "CorrelationId"))
-        {
-            Logger.LogDebug("Processing request {Method} {Path} with correlation ID {CorrelationId}", 
-                context.Request.Method, context.Request.Path, correlationId);
-            
-            await Next(context);
-        }
+        Logger.LogDebug("Processing request {Method} {Path} with correlation ID {CorrelationId}", 
+            context.Request.Method, context.Request.Path, correlationId);
+        
+        await Next(context);
     }
 
     private static string GetOrGenerateCorrelationId(HttpContext context)

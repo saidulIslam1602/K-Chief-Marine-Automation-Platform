@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using KChief.Platform.Core.Telemetry;
 using Microsoft.ApplicationInsights;

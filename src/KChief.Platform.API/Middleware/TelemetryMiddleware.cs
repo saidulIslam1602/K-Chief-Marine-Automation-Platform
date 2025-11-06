@@ -55,66 +55,63 @@ public class TelemetryMiddleware : BaseMiddleware
 
         try
         {
-            using (CreateLogContext(context, "Telemetry"))
+            // Add trace context to response headers
+            if (activity != null)
             {
-                // Add trace context to response headers
-                if (activity != null)
+                var traceContext = _tracingService.GetTraceContext();
+                if (!string.IsNullOrEmpty(traceContext))
                 {
-                    var traceContext = _tracingService.GetTraceContext();
-                    if (!string.IsNullOrEmpty(traceContext))
-                    {
-                        context.Response.Headers.Append("traceresponse", traceContext);
-                    }
+                    context.Response.Headers.Append("traceresponse", traceContext);
                 }
-
-                await Next(context);
-
-                stopwatch.Stop();
-                var duration = stopwatch.Elapsed;
-                var statusCode = context.Response.StatusCode;
-                var success = statusCode < 400;
-
-                // Record metrics
-                var endpoint = GetEndpoint(context);
-                _metricsService.RecordHttpRequest(
-                    context.Request.Method,
-                    endpoint,
-                    statusCode,
-                    duration.TotalSeconds);
-
-                // Track request in Application Insights
-                _telemetryService.TrackRequest(
-                    $"{context.Request.Method} {endpoint}",
-                    startTime,
-                    duration,
-                    statusCode.ToString(),
-                    success);
-
-                // Add tags to activity
-                if (activity != null)
-                {
-                    _tracingService.AddTag(activity, "http.status_code", statusCode.ToString());
-                    _tracingService.AddTag(activity, "http.duration_ms", duration.TotalMilliseconds.ToString("F2"));
-                    _tracingService.AddTag(activity, "success", success.ToString());
-                }
-
-                // Track slow requests
-                if (duration.TotalSeconds > 2.0)
-                {
-                    _telemetryService.TrackEvent("SlowRequest", new Dictionary<string, string>
-                    {
-                        ["method"] = context.Request.Method,
-                        ["endpoint"] = endpoint,
-                        ["duration_ms"] = duration.TotalMilliseconds.ToString("F2"),
-                        ["status_code"] = statusCode.ToString(),
-                        ["correlation_id"] = correlationId
-                    });
-                }
-
-                Logger.LogDebug(
-                    "Request telemetry: {Method} {Endpoint} - {StatusCode} ({DurationMs}ms)",
-                    context.Request.Method, endpoint, statusCode, duration.TotalMilliseconds);
             }
+
+            await Next(context);
+
+            stopwatch.Stop();
+            var duration = stopwatch.Elapsed;
+            var statusCode = context.Response.StatusCode;
+            var success = statusCode < 400;
+
+            // Record metrics
+            var endpoint = GetEndpoint(context);
+            _metricsService.RecordHttpRequest(
+                context.Request.Method,
+                endpoint,
+                statusCode,
+                duration.TotalSeconds);
+
+            // Track request in Application Insights
+            _telemetryService.TrackRequest(
+                $"{context.Request.Method} {endpoint}",
+                startTime,
+                duration,
+                statusCode.ToString(),
+                success);
+
+            // Add tags to activity
+            if (activity != null)
+            {
+                _tracingService.AddTag(activity, "http.status_code", statusCode.ToString());
+                _tracingService.AddTag(activity, "http.duration_ms", duration.TotalMilliseconds.ToString("F2"));
+                _tracingService.AddTag(activity, "success", success.ToString());
+            }
+
+            // Track slow requests
+            if (duration.TotalSeconds > 2.0)
+            {
+                _telemetryService.TrackEvent("SlowRequest", new Dictionary<string, string>
+                {
+                    ["method"] = context.Request.Method,
+                    ["endpoint"] = endpoint,
+                    ["duration_ms"] = duration.TotalMilliseconds.ToString("F2"),
+                    ["status_code"] = statusCode.ToString(),
+                    ["correlation_id"] = correlationId
+                });
+            }
+
+            Logger.LogDebug(
+                "Request telemetry: {Method} {Endpoint} - {StatusCode} ({DurationMs}ms)",
+                context.Request.Method, endpoint, statusCode, duration.TotalMilliseconds);
         }
         catch (Exception ex)
         {

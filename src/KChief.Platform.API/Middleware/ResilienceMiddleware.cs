@@ -31,24 +31,11 @@ public class ResilienceMiddleware
             .Handle<Exception>()
             .CircuitBreakerAsync(
                 handledEventsAllowedBeforeBreaking: 10,
-                durationOfBreak: TimeSpan.FromMinutes(1),
-                onBreak: (exception, duration) =>
-                {
-                    Log.Error("API Circuit breaker opened for {DurationMinutes} minutes due to: {ExceptionMessage}",
-                        duration.TotalMinutes, exception.Message);
-                },
-                onReset: () =>
-                {
-                    Log.Information("API Circuit breaker reset - service is healthy again");
-                });
+                durationOfBreak: TimeSpan.FromMinutes(1));
 
         _requestBulkhead = Policy.BulkheadAsync(
             maxParallelization: 100,
-            maxQueuingActions: 200,
-            onBulkheadRejected: () =>
-            {
-                Log.Warning("Request rejected by bulkhead - system is at capacity");
-            });
+            maxQueuingActions: 200);
     }
 
     public ResilienceMiddleware(RequestDelegate next, ILogger<ResilienceMiddleware> logger, IConfiguration configuration)

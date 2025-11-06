@@ -11,17 +11,19 @@ public class LoginRequestValidator : BaseValidator<LoginRequest>
 {
     public LoginRequestValidator()
     {
-        RuleFor(x => x.Username)
-            .ValidateRequiredString("Username")
-            .ValidateStringLength("Username", 3, 255)
+        ValidateRequiredString(RuleFor(x => x.Username), "Username")
+            .Length(3, 255)
+            .WithMessage("Username must be between 3 and 255 characters")
+            .WithErrorCode("USERNAME_LENGTH")
             .Matches(@"^[a-zA-Z0-9_\-\.]+$")
             .WithMessage("Username can only contain letters, numbers, underscores, hyphens, and dots")
             .WithErrorCode("LOGIN_USERNAME_INVALID_FORMAT")
             .When(x => !string.IsNullOrEmpty(x.Username));
 
-        RuleFor(x => x.Password)
-            .ValidateRequiredString("Password")
-            .ValidateStringLength("Password", 6, 255);
+        ValidateRequiredString(RuleFor(x => x.Password), "Password")
+            .Length(6, 255)
+            .WithMessage("Password must be between 6 and 255 characters")
+            .WithErrorCode("PASSWORD_LENGTH");
     }
 }
 

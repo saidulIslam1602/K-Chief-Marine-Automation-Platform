@@ -63,8 +63,9 @@ public static class ResiliencePolicies
                     using (LogContext.PushProperty("CircuitState", "Open"))
                     using (LogContext.PushProperty("BreakDurationSeconds", duration.TotalSeconds))
                     {
+                        var errorMessage = exception.Exception?.Message ?? "Unknown error";
                         Log.Error("Circuit breaker opened for operation {OperationKey} for {BreakDurationSeconds} seconds due to: {ExceptionMessage}",
-                            context.OperationKey, duration.TotalSeconds, exception.Message);
+                            context.OperationKey, duration.TotalSeconds, errorMessage);
                     }
                 },
                 onReset: (context) =>
@@ -94,18 +95,7 @@ public static class ResiliencePolicies
     {
         return Policy.TimeoutAsync<HttpResponseMessage>(
             timeout,
-            TimeoutStrategy.Optimistic,
-            onTimeout: (context, timespan, task) =>
-            {
-                var correlationId = context.GetValueOrDefault("CorrelationId", "unknown");
-                using (LogContext.PushProperty("CorrelationId", correlationId))
-                using (LogContext.PushProperty("TimeoutSeconds", timespan.TotalSeconds))
-                {
-                    Log.Warning("Operation {OperationKey} timed out after {TimeoutSeconds} seconds",
-                        context.OperationKey, timespan.TotalSeconds);
-                }
-                return Task.CompletedTask;
-            });
+            TimeoutStrategy.Optimistic);
     }
 
     /// <summary>
@@ -115,44 +105,20 @@ public static class ResiliencePolicies
     {
         return Policy.BulkheadAsync<HttpResponseMessage>(
             maxParallelization,
-            maxQueuingActions,
-            onBulkheadRejected: (context) =>
-            {
-                var correlationId = context.GetValueOrDefault("CorrelationId", "unknown");
-                using (LogContext.PushProperty("CorrelationId", correlationId))
-                using (LogContext.PushProperty("MaxParallelization", maxParallelization))
-                using (LogContext.PushProperty("MaxQueuingActions", maxQueuingActions))
-                {
-                    Log.Warning("Bulkhead rejection for operation {OperationKey} - max parallelization: {MaxParallelization}, max queuing: {MaxQueuingActions}",
-                        context.OperationKey, maxParallelization, maxQueuingActions);
-                }
-            });
+            maxQueuingActions);
     }
 
     /// <summary>
     /// Creates a fallback policy for graceful degradation.
     /// </summary>
-    public static IAsyncPolicy<HttpResponseMessage> GetFallbackPolicy(Func<Context, CancellationToken, Task<HttpResponseMessage>> fallbackAction)
+    public static IAsyncPolicy<HttpResponseMessage> GetFallbackPolicy(Func<CancellationToken, Task<HttpResponseMessage>> fallbackAction)
     {
         return Policy
             .Handle<HttpRequestException>()
             .Or<TaskCanceledException>()
             .Or<TimeoutRejectedException>()
-            .Or<CircuitBreakerOpenException>()
             .Or<BulkheadRejectedException>()
-            .FallbackAsync(
-                fallbackAction,
-                onFallback: (exception, context) =>
-                {
-                    var correlationId = context.GetValueOrDefault("CorrelationId", "unknown");
-                    using (LogContext.PushProperty("CorrelationId", correlationId))
-                    using (LogContext.PushProperty("FallbackReason", exception.GetType().Name))
-                    {
-                        Log.Warning("Fallback executed for operation {OperationKey} due to {FallbackReason}: {ExceptionMessage}",
-                            context.OperationKey, exception.GetType().Name, exception.Message);
-                    }
-                    return Task.CompletedTask;
-                });
+            .FallbackAsync(fallbackAction);
     }
 
     /// <summary>

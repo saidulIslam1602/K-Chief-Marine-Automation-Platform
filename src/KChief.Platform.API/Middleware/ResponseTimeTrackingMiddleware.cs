@@ -99,19 +99,12 @@ public class ResponseTimeTrackingMiddleware
             timings.StatusCode,
             timings.TotalTime / 1000.0);
 
-        // Record timing breakdown if available
-        if (timings.MiddlewareTime > 0)
-        {
-            _performanceService.RecordMetric("middleware_time_ms", timings.MiddlewareTime);
-        }
-
-        // Record by status code
-        var statusCodeCategory = GetStatusCodeCategory(timings.StatusCode);
-        _performanceService.RecordMetric($"response_time_{statusCodeCategory}_ms", timings.TotalTime);
-
-        // Record by endpoint
-        var endpointKey = $"{timings.Method}:{timings.Path}";
-        _performanceService.RecordMetric($"endpoint_time_{endpointKey}_ms", timings.TotalTime);
+        // Record HTTP request metrics using the correct method
+        _performanceService.RecordHttpRequest(
+            timings.Method,
+            timings.Path,
+            timings.StatusCode,
+            timings.TotalTime / 1000.0); // Convert ms to seconds
     }
 
     private void LogResponseTime(RequestTimings timings)

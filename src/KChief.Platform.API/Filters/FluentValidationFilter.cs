@@ -21,7 +21,7 @@ public class FluentValidationFilter : IAsyncActionFilter
 
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        var correlationId = context.HttpContext.Items[CorrelationIdMiddleware.CorrelationIdKey]?.ToString() ?? 
+        var correlationId = context.HttpContext.Items["CorrelationId"]?.ToString() ?? 
                            Guid.NewGuid().ToString("N")[..8];
 
         using (LogContext.PushProperty("CorrelationId", correlationId))

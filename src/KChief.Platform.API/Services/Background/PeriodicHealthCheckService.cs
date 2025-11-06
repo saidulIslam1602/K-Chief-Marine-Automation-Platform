@@ -39,11 +39,11 @@ public class PeriodicHealthCheckService : BackgroundServiceBase
             }
             else if (result.Status == HealthStatus.Degraded)
             {
-                Logger.LogWarning("Periodic health check degraded: {Description}", result.Description);
+                Logger.LogWarning("Periodic health check degraded: {Status}", result.Status);
             }
             else
             {
-                Logger.LogError("Periodic health check failed: {Description}", result.Description);
+                Logger.LogError("Periodic health check failed: {Status}", result.Status);
                 
                 foreach (var entry in result.Entries)
                 {

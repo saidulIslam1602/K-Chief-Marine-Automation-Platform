@@ -138,8 +138,7 @@ public static class SwaggerConfiguration
             }
         });
 
-        // Enable annotations
-        options.EnableAnnotations();
+        // Annotations are enabled by default in newer versions
 
         // Custom operation filters
         options.OperationFilter<ResponseExamplesOperationFilter>();

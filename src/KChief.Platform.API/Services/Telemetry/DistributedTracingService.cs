@@ -141,14 +141,17 @@ public class DistributedTracingService
 
         try
         {
-            var activityEvent = new ActivityEvent(eventName);
+            // ActivityEvent doesn't support adding tags after creation
+            // Instead, add the event with tags as activity tags
             if (attributes != null)
             {
                 foreach (var attr in attributes)
                 {
-                    activityEvent.AddTag(attr.Key, attr.Value);
+                    activity.SetTag($"{eventName}.{attr.Key}", attr.Value);
                 }
             }
+            
+            var activityEvent = new ActivityEvent(eventName);
             activity.AddEvent(activityEvent);
         }
         catch (Exception ex)

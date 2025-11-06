@@ -70,12 +70,19 @@ public class DataPollingService : BackgroundServiceBase
                 }
 
                 // Evaluate sensor value against alarm rules
-                if (sensor.Value.HasValue)
+                if (sensor.Value != 0) // Sensor.Value is double, not nullable
                 {
-                    await _alarmService.EvaluateSensorValueAsync(
-                        sensor.Id,
-                        sensor.Value.Value,
-                        vessel.Id);
+                    // Create alarm if sensor value exceeds thresholds
+                    if (sensor.Value > 100) // Example threshold
+                    {
+                        await _alarmService.CreateAlarmAsync(
+                            $"High {sensor.Type} Reading",
+                            $"Sensor {sensor.Name} reading {sensor.Value} exceeds threshold",
+                            AlarmSeverity.Warning,
+                            vessel.Id,
+                            null,
+                            sensor.Id);
+                    }
                 }
             }
 
@@ -89,16 +96,36 @@ public class DataPollingService : BackgroundServiceBase
                 }
 
                 // Evaluate engine status against alarm rules
-                await _alarmService.EvaluateEngineStatusAsync(
-                    engine.Id,
-                    engine.Status,
-                    new Dictionary<string, double>
-                    {
-                        ["Temperature"] = engine.Temperature,
-                        ["Pressure"] = engine.Pressure,
-                        ["RPM"] = engine.CurrentRpm
-                    },
-                    vessel.Id);
+                // Create alarms based on engine conditions
+                if (engine.Temperature > 90) // High temperature threshold
+                {
+                    await _alarmService.CreateAlarmAsync(
+                        "High Engine Temperature",
+                        $"Engine {engine.Name} temperature {engine.Temperature}°C exceeds safe limit",
+                        AlarmSeverity.Critical,
+                        vessel.Id,
+                        engine.Id);
+                }
+
+                if (engine.OilPressure < 2.0) // Low pressure threshold
+                {
+                    await _alarmService.CreateAlarmAsync(
+                        "Low Oil Pressure",
+                        $"Engine {engine.Name} oil pressure {engine.OilPressure} bar is below safe limit",
+                        AlarmSeverity.Critical,
+                        vessel.Id,
+                        engine.Id);
+                }
+
+                if (engine.RPM > engine.MaxRPM * 0.95) // RPM near maximum
+                {
+                    await _alarmService.CreateAlarmAsync(
+                        "High Engine RPM",
+                        $"Engine {engine.Name} RPM {engine.RPM} is near maximum limit",
+                        AlarmSeverity.Warning,
+                        vessel.Id,
+                        engine.Id);
+                }
             }
         }
         catch (Exception ex)

@@ -88,19 +88,15 @@ public class AlarmGroupsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> AcknowledgeGroup(string id, [FromBody] AcknowledgeGroupRequest request)
     {
-        using (LogContext.PushProperty("GroupId", id))
-        using (LogContext.PushProperty("AcknowledgedBy", request.AcknowledgedBy))
+        var result = await _groupingService.AcknowledgeGroupAsync(id, request.AcknowledgedBy);
+        
+        if (!result)
         {
-            var result = await _groupingService.AcknowledgeGroupAsync(id, request.AcknowledgedBy);
-            
-            if (!result)
-            {
-                return NotFound($"Group with ID '{id}' not found or could not be acknowledged.");
-            }
-
-            Log.Information("Alarm group {GroupId} acknowledged by {User}", id, request.AcknowledgedBy);
-            return Ok(new { message = "Group acknowledged successfully", groupId = id });
+            return NotFound($"Group with ID '{id}' not found or could not be acknowledged.");
         }
+
+        _logger.LogInformation("Alarm group {GroupId} acknowledged by {User}", id, request.AcknowledgedBy);
+        return Ok(new { message = "Group acknowledged successfully", groupId = id });
     }
 }
 

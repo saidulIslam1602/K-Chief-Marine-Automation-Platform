@@ -33,7 +33,7 @@ public class PerformanceProfilingService
             OperationName = operationName,
             StartTime = DateTime.UtcNow,
             Stopwatch = Stopwatch.StartNew(),
-            Metadata = metadata ?? new Dictionary<string, string>()
+            Metadata = metadata?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value) ?? new Dictionary<string, string>()
         };
 
         _sessions[sessionId] = session;
@@ -59,7 +59,7 @@ public class PerformanceProfilingService
             Name = checkpointName,
             Timestamp = DateTime.UtcNow,
             ElapsedMilliseconds = session.Stopwatch.ElapsedMilliseconds,
-            Data = data ?? new Dictionary<string, string>()
+            Data = data?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value) ?? new Dictionary<string, string>()
         };
 
         session.Checkpoints.Add(checkpoint);

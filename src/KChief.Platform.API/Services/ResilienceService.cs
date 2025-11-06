@@ -53,7 +53,7 @@ public class ResilienceService
             catch (Exception ex)
             {
                 Log.Error(ex, "Vessel control operation failed: {OperationName}", operationName);
-                throw new VesselOperationException($"Vessel control operation '{operationName}' failed", ex)
+                throw new VesselOperationException("unknown", operationName, $"Vessel control operation '{operationName}' failed: {ex.Message}")
                     .WithContext("OperationName", operationName)
                     .WithContext("PolicyType", "VesselControl");
             }
@@ -162,7 +162,7 @@ public class ResilienceService
             catch (Exception ex)
             {
                 Log.Error(ex, "Database operation failed: {OperationName}", operationName);
-                throw new KChiefException($"Database operation '{operationName}' failed", ex)
+                throw new ProtocolException("Database", $"Database operation '{operationName}' failed: {ex.Message}")
                     .WithContext("OperationName", operationName)
                     .WithContext("PolicyType", "Database");
             }
@@ -200,7 +200,7 @@ public class ResilienceService
             catch (Exception ex)
             {
                 Log.Error(ex, "Alarm system operation failed: {OperationName}", operationName);
-                throw new KChiefException($"Alarm system operation '{operationName}' failed", ex)
+                throw new ProtocolException("AlarmSystem", $"Alarm system operation '{operationName}' failed: {ex.Message}")
                     .WithContext("OperationName", operationName)
                     .WithContext("PolicyType", "AlarmSystem");
             }
@@ -238,7 +238,7 @@ public class ResilienceService
             catch (Exception ex)
             {
                 Log.Error(ex, "Message bus operation failed: {OperationName}", operationName);
-                throw new KChiefException($"Message bus operation '{operationName}' failed", ex)
+                throw new ProtocolException("MessageBus", $"Message bus operation '{operationName}' failed: {ex.Message}")
                     .WithContext("OperationName", operationName)
                     .WithContext("PolicyType", "MessageBus");
             }
@@ -276,7 +276,7 @@ public class ResilienceService
             catch (Exception ex)
             {
                 Log.Error(ex, "External API operation failed: {OperationName}", operationName);
-                throw new KChiefException($"External API operation '{operationName}' failed", ex)
+                throw new ProtocolException("ExternalAPI", $"External API operation '{operationName}' failed: {ex.Message}")
                     .WithContext("OperationName", operationName)
                     .WithContext("PolicyType", "ExternalApi");
             }
@@ -310,7 +310,7 @@ public class ResilienceService
             catch (Exception ex)
             {
                 Log.Error(ex, "Custom policy operation failed: {OperationName}", operationName);
-                throw new KChiefException($"Operation '{operationName}' with custom policy failed", ex)
+                throw new ProtocolException("Custom", $"Operation '{operationName}' with custom policy failed: {ex.Message}")
                     .WithContext("OperationName", operationName)
                     .WithContext("PolicyType", policyType);
             }

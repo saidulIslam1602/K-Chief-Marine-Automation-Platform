@@ -114,7 +114,7 @@ public class ResilienceController : ControllerBase
                         {
                             _failureCounter++;
                             Log.Warning("Simulated failure #{FailureCount} in circuit breaker demo", _failureCounter);
-                            throw new VesselOperationException($"Simulated failure #{_failureCounter}");
+                            throw new VesselOperationException("test-vessel", "simulate", $"Simulated failure #{_failureCounter}");
                         }
 
                         Log.Information("Circuit breaker demo operation succeeded");
@@ -284,7 +284,7 @@ public class ResilienceController : ControllerBase
                         if (simulateFailure)
                         {
                             Log.Warning("Simulated primary service failure in fallback demo");
-                            throw new KChiefException("Simulated primary service failure");
+                            throw new ProtocolException("Simulation", "Simulated primary service failure");
                         }
 
                         Log.Information("Primary service succeeded in fallback demo");
