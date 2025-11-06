@@ -1,35 +1,157 @@
-name: CI
+name: CI/CD Pipeline
 
 on:
   push:
     branches: [ main, develop ]
   pull_request:
     branches: [ main, develop ]
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  BUILD_CONFIGURATION: 'Release'
 
 jobs:
   build:
+    name: Build and Test
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
     
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '8.0.x'
+        dotnet-version: ${{ env.DOTNET_VERSION }}
     
     - name: Restore dependencies
       run: dotnet restore
     
-    - name: Build
-      run: dotnet build --no-restore --configuration Release
+    - name: Build solution
+      run: dotnet build --no-restore --configuration ${{ env.BUILD_CONFIGURATION }} --verbosity minimal
     
-    - name: Test
-      run: dotnet test --configuration Release --verbosity normal --collect:"XPlat Code Coverage"
+    - name: Run unit tests
+      run: dotnet test --no-build --configuration ${{ env.BUILD_CONFIGURATION }} --verbosity normal --collect:"XPlat Code Coverage" --results-directory:"${{ runner.temp }}/test-results"
+    
+    - name: Run integration tests
+      run: dotnet test tests/KChief.Integration.Tests --no-build --configuration ${{ env.BUILD_CONFIGURATION }} --verbosity normal
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results
+        path: ${{ runner.temp }}/test-results
+        retention-days: 30
     
     - name: Upload coverage reports
       uses: codecov/codecov-action@v3
       with:
         files: '**/coverage.cobertura.xml'
         fail_ci_if_error: false
+        token: ${{ secrets.CODECOV_TOKEN }}
+
+  code-quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+    needs: build
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+    
+    - name: Install dotnet-format
+      run: dotnet tool install -g dotnet-format
+    
+    - name: Check code formatting
+      run: dotnet format --verify-no-changes --verbosity diagnostic
+      continue-on-error: true
+    
+    - name: Run code analysis
+      run: dotnet build --configuration ${{ env.BUILD_CONFIGURATION }} /p:RunAnalyzers=true /p:RunCodeAnalysis=true
+      continue-on-error: true
+
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    needs: build
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+    
+    - name: Run NuGet security audit
+      run: dotnet list package --vulnerable --include-transitive
+      continue-on-error: true
+    
+    - name: Run OWASP Dependency Check
+      uses: dependency-check/Dependency-Check_Action@main
+      with:
+        project: 'K-Chief-Marine-Automation-Platform'
+        path: '.'
+        format: 'HTML'
+      continue-on-error: true
+
+  docker-build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    needs: [build, code-quality]
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Build Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./docker/Dockerfile
+        push: false
+        tags: kchief-api:latest
+        cache-from: type=registry,ref=kchief-api:buildcache
+        cache-to: type=inline
+    
+    - name: Test Docker image
+      run: |
+        docker run --rm kchief-api:latest dotnet --version
+
+  publish:
+    name: Publish Artifacts
+    runs-on: ubuntu-latest
+    needs: [build, code-quality, security-scan]
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+    
+    - name: Publish API
+      run: dotnet publish src/KChief.Platform.API/KChief.Platform.API.csproj --configuration ${{ env.BUILD_CONFIGURATION }} --output ./publish
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: publish-artifacts
+        path: ./publish
+        retention-days: 7
 

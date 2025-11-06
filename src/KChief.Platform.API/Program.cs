@@ -2,6 +2,8 @@ using KChief.Platform.API.Hubs;
 using KChief.Platform.API.Services;
 using KChief.Platform.Core.Interfaces;
 using KChief.AlarmSystem.Services;
+using KChief.DataAccess.Services;
+using KChief.Protocols.Modbus.Services;
 using KChief.Protocols.OPC.Services;
 using KChief.VesselControl.Services;
 
@@ -33,6 +35,8 @@ public class Program
         builder.Services.AddScoped<IVesselControlService, VesselControlService>();
         builder.Services.AddSingleton<IAlarmService, AlarmService>();
         builder.Services.AddSingleton<IOPCUaClient, OPCUaClientService>();
+        builder.Services.AddSingleton<IModbusClient, ModbusClientService>();
+        builder.Services.AddSingleton<IMessageBus, MessageBusService>();
         builder.Services.AddSingleton<RealtimeUpdateService>();
 
         // Add CORS for development

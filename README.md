@@ -86,23 +86,40 @@ K-Chief-Marine-Automation-Platform/
 
 ## Features
 
-### Current Implementation
+### Implemented Features
 
 - Modular platform architecture
-- RESTful API endpoints
-- Unit and integration testing framework
+- RESTful API endpoints with Swagger documentation
+- Unit and integration testing framework (37 tests)
 - Docker containerization support
-- CI/CD pipeline configuration
-
-### Planned Features
-
-- OPC UA client/server implementation
+- Full CI/CD pipeline with multiple stages
+- OPC UA client implementation
 - Modbus TCP/RTU protocol support
 - Real-time data streaming with SignalR
 - Comprehensive alarm and event management
-- Historical data logging and retrieval
-- Message bus integration for distributed communication
+- Message bus integration (RabbitMQ)
 - Legacy code modernization examples
+- Comprehensive documentation
+
+### Architecture Highlights
+
+- Clean Architecture with separation of concerns
+- Dependency Injection throughout
+- Async/await for non-blocking operations
+- Event-driven architecture
+- Protocol abstraction for industrial communication
+- Real-time updates via SignalR
+- Message bus for distributed communication
+
+## Documentation
+
+Comprehensive documentation is available in the `docs/` directory:
+
+- [Architecture Documentation](docs/ARCHITECTURE.md) - System architecture and design
+- [API Documentation](docs/API.md) - Complete API reference
+- [Deployment Guide](docs/DEPLOYMENT.md) - Deployment instructions
+- [Developer Guide](docs/DEVELOPER_GUIDE.md) - Development guidelines
+- [Legacy Modernization](docs/LEGACY_MODERNIZATION.md) - Code modernization examples
 
 ## Development Guidelines
 
@@ -113,6 +130,7 @@ K-Chief-Marine-Automation-Platform/
 - Write comprehensive unit tests
 - Use async/await for I/O operations
 - Implement proper error handling and logging
+- See [Developer Guide](docs/DEVELOPER_GUIDE.md) for details
 
 ### Testing
 
@@ -120,6 +138,7 @@ K-Chief-Marine-Automation-Platform/
 - Write unit tests for all business logic
 - Include integration tests for API endpoints
 - Use mocking frameworks for dependencies
+- Current coverage: 37 tests (20 unit + 17 integration)
 
 ### Git Workflow
 

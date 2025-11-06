@@ -1,0 +1,42 @@
+name: Continuous Deployment
+
+on:
+  workflow_run:
+    workflows: ["CI/CD Pipeline"]
+    types:
+      - completed
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.ref == 'refs/heads/main' }}
+    environment:
+      name: production
+      url: https://kchief-api.example.com
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: publish-artifacts
+        path: ./publish
+    
+    - name: Deploy to server
+      run: |
+        echo "Deployment steps would go here"
+        echo "Examples:"
+        echo "- Copy files to server"
+        echo "- Run database migrations"
+        echo "- Restart services"
+        echo "- Health checks"
+    
+    - name: Health check
+      run: |
+        echo "Running health checks..."
+        # curl -f https://kchief-api.example.com/health || exit 1
+
