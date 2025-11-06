@@ -3,6 +3,18 @@ using System.Diagnostics;
 namespace KChief.Platform.Core.Telemetry;
 
 /// <summary>
+/// Severity levels for trace messages.
+/// </summary>
+public enum TraceSeverity
+{
+    Verbose = 0,
+    Information = 1,
+    Warning = 2,
+    Error = 3,
+    Critical = 4
+}
+
+/// <summary>
 /// Interface for telemetry and metrics collection.
 /// </summary>
 public interface ITelemetryService
@@ -35,7 +47,7 @@ public interface ITelemetryService
     /// <summary>
     /// Tracks a trace message.
     /// </summary>
-    void TrackTrace(string message, Microsoft.ApplicationInsights.DataContracts.SeverityLevel severityLevel = Microsoft.ApplicationInsights.DataContracts.SeverityLevel.Information);
+    void TrackTrace(string message, TraceSeverity severityLevel = TraceSeverity.Information);
 
     /// <summary>
     /// Starts a new activity for distributed tracing.

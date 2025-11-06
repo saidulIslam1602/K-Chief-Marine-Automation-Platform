@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Http;
-using Serilog;
-using Serilog.Context;
+using Microsoft.Extensions.Logging;
 
 namespace KChief.Platform.Core.Middleware;
 
@@ -49,18 +48,14 @@ public abstract class BaseMiddleware
     }
 
     /// <summary>
-    /// Creates a log context with common properties.
+    /// Gets common log properties for structured logging.
     /// </summary>
-    protected IDisposable CreateLogContext(HttpContext context, string operation)
+    protected (string CorrelationId, string Path, string Method) GetLogProperties(HttpContext context)
     {
         var correlationId = GetCorrelationId(context);
         var path = context.Request.Path.Value ?? "unknown";
         var method = context.Request.Method;
-
-        return LogContext.PushProperty("CorrelationId", correlationId)
-            .PushProperty("Operation", operation)
-            .PushProperty("Path", path)
-            .PushProperty("Method", method);
+        return (correlationId, path, method);
     }
 
     /// <summary>
@@ -80,29 +75,27 @@ public abstract class BaseMiddleware
     /// </summary>
     protected async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        using (CreateLogContext(context, "ErrorHandling"))
+        var (correlationId, path, method) = GetLogProperties(context);
+        Logger.LogError(exception, "Error in middleware: {Path} {Method} {CorrelationId}", path, method, correlationId);
+
+        if (!context.Response.HasStarted)
         {
-            Logger.LogError(exception, "Error in middleware: {Path}", context.Request.Path);
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            context.Response.ContentType = "application/json";
 
-            if (!context.Response.HasStarted)
+            var errorResponse = new
             {
-                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-                context.Response.ContentType = "application/json";
+                type = "https://tools.ietf.org/html/rfc7231#section-6.6.1",
+                title = "Internal Server Error",
+                status = StatusCodes.Status500InternalServerError,
+                detail = "An error occurred while processing your request",
+                instance = context.Request.Path,
+                correlationId = GetCorrelationId(context),
+                timestamp = DateTime.UtcNow
+            };
 
-                var errorResponse = new
-                {
-                    type = "https://tools.ietf.org/html/rfc7231#section-6.6.1",
-                    title = "Internal Server Error",
-                    status = StatusCodes.Status500InternalServerError,
-                    detail = "An error occurred while processing your request",
-                    instance = context.Request.Path,
-                    correlationId = GetCorrelationId(context),
-                    timestamp = DateTime.UtcNow
-                };
-
-                var json = System.Text.Json.JsonSerializer.Serialize(errorResponse);
-                await context.Response.WriteAsync(json);
-            }
+            var json = System.Text.Json.JsonSerializer.Serialize(errorResponse);
+            await context.Response.WriteAsync(json);
         }
     }
 }

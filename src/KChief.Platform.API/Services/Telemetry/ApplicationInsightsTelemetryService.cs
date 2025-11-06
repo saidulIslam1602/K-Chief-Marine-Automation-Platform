@@ -84,11 +84,20 @@ public class ApplicationInsightsTelemetryService : ITelemetryService
         }
     }
 
-    public void TrackTrace(string message, SeverityLevel severityLevel = SeverityLevel.Information)
+    public void TrackTrace(string message, TraceSeverity severityLevel = TraceSeverity.Information)
     {
         try
         {
-            _telemetryClient.TrackTrace(message, severityLevel);
+            var aiSeverity = severityLevel switch
+            {
+                TraceSeverity.Verbose => SeverityLevel.Verbose,
+                TraceSeverity.Information => SeverityLevel.Information,
+                TraceSeverity.Warning => SeverityLevel.Warning,
+                TraceSeverity.Error => SeverityLevel.Error,
+                TraceSeverity.Critical => SeverityLevel.Critical,
+                _ => SeverityLevel.Information
+            };
+            _telemetryClient.TrackTrace(message, aiSeverity);
         }
         catch (Exception ex)
         {

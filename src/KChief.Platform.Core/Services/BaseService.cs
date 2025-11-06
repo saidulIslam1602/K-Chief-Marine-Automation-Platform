@@ -1,5 +1,4 @@
-using Serilog;
-using Serilog.Context;
+using Microsoft.Extensions.Logging;
 
 namespace KChief.Platform.Core.Services;
 
@@ -24,20 +23,17 @@ public abstract class BaseService
         T defaultValue,
         CancellationToken cancellationToken = default)
     {
-        using (LogContext.PushProperty("Operation", operationName))
+        try
         {
-            try
-            {
-                Logger.LogDebug("Starting operation: {Operation}", operationName);
-                var result = await operation();
-                Logger.LogDebug("Operation completed: {Operation}", operationName);
-                return result;
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error in operation: {Operation}", operationName);
-                return defaultValue;
-            }
+            Logger.LogDebug("Starting operation: {Operation}", operationName);
+            var result = await operation();
+            Logger.LogDebug("Operation completed: {Operation}", operationName);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error in operation: {Operation}", operationName);
+            return defaultValue;
         }
     }
 
@@ -49,19 +45,16 @@ public abstract class BaseService
         Func<Task> operation,
         CancellationToken cancellationToken = default)
     {
-        using (LogContext.PushProperty("Operation", operationName))
+        try
         {
-            try
-            {
-                Logger.LogDebug("Starting operation: {Operation}", operationName);
-                await operation();
-                Logger.LogDebug("Operation completed: {Operation}", operationName);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error in operation: {Operation}", operationName);
-                throw;
-            }
+            Logger.LogDebug("Starting operation: {Operation}", operationName);
+            await operation();
+            Logger.LogDebug("Operation completed: {Operation}", operationName);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error in operation: {Operation}", operationName);
+            throw;
         }
     }
 
@@ -114,11 +107,7 @@ public abstract class BaseService
             var result = await operation();
             stopwatch.Stop();
             
-            using (LogContext.PushProperty("Operation", operationName))
-            using (LogContext.PushProperty("DurationMs", stopwatch.ElapsedMilliseconds))
-            {
-                Logger.LogDebug("Operation {Operation} completed in {DurationMs}ms", operationName, stopwatch.ElapsedMilliseconds);
-            }
+            Logger.LogDebug("Operation {Operation} completed in {DurationMs}ms", operationName, stopwatch.ElapsedMilliseconds);
             
             return result;
         }
