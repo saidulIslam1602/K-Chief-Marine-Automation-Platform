@@ -21,7 +21,8 @@ public class OPCUaConnectionPool : BaseConnectionPool<Session>
 
     protected override async Task<Session> CreateConnectionAsync(CancellationToken cancellationToken)
     {
-        var configuredEndpoint = CoreClientUtils.SelectEndpoint(_endpointUrl, useSecurity: false);
+        var endpointDescription = CoreClientUtils.SelectEndpoint(_endpointUrl, useSecurity: false);
+        var configuredEndpoint = new ConfiguredEndpoint(null, endpointDescription, EndpointConfiguration.Create(_applicationConfiguration));
         var userIdentity = new UserIdentity(new AnonymousIdentityToken());
 
         var session = await Session.Create(
@@ -46,7 +47,12 @@ public class OPCUaConnectionPool : BaseConnectionPool<Session>
     {
         try
         {
-            return connection != null && connection.Connected;
+            if (connection == null || !connection.Connected)
+                return false;
+
+            // Perform a simple read operation to verify the connection is actually working
+            await Task.Run(() => connection.ReadValue(Variables.Server_ServerStatus_State), cancellationToken);
+            return true;
         }
         catch
         {

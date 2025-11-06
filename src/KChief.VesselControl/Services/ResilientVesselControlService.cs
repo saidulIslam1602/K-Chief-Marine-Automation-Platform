@@ -1,5 +1,4 @@
-using Serilog;
-using Serilog.Context;
+using Microsoft.Extensions.Logging;
 using KChief.Platform.Core.Interfaces;
 using KChief.Platform.Core.Models;
 using KChief.Platform.Core.Exceptions;

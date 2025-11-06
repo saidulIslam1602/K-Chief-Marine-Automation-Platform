@@ -2,8 +2,7 @@ using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 using KChief.Platform.Core.Interfaces;
 using KChief.Platform.Core.Models;
-using Serilog;
-using Serilog.Context;
+using Microsoft.Extensions.Logging;
 
 namespace KChief.AlarmSystem.Services;
 

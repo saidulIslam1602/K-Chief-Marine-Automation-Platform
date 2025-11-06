@@ -1,7 +1,7 @@
 using KChief.Platform.Core.Interfaces;
 using KChief.Platform.Core.Models;
+using KChief.DataAccess.Interfaces;
 using Microsoft.Extensions.Logging;
-using Serilog.Context;
 
 namespace KChief.DataAccess.Repositories;
 
@@ -52,13 +52,11 @@ public class CachedVesselRepository : IVesselRepository
         var vesselId = id.ToString() ?? throw new ArgumentException("Vessel ID cannot be null", nameof(id));
         var cacheKey = $"vessel:{vesselId}";
 
-        using (LogContext.PushProperty("VesselId", vesselId))
-        {
-            return await _cacheService.GetOrSetAsync(
-                cacheKey,
-                async () => await _repository.GetByIdAsync(id),
-                _defaultExpiration);
-        }
+        _logger.LogDebug("Getting vessel by ID: {VesselId}", vesselId);
+        return await _cacheService.GetOrSetAsync(
+            cacheKey,
+            async () => await _repository.GetByIdAsync(id),
+            _defaultExpiration);
     }
 
     public async Task<Vessel?> GetFirstOrDefaultAsync(

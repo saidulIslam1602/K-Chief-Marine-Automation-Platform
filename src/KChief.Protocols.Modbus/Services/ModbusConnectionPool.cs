@@ -87,6 +87,6 @@ public class ModbusConnectionPool : BaseConnectionPool<ModbusConnection>
 public class ModbusConnection
 {
     public TcpClient? TcpClient { get; set; }
-    public IModbusMaster? Master { get; set; }
+    public object? Master { get; set; } // Using object to avoid interface issues
 }
 

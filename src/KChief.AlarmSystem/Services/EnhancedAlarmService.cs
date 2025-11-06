@@ -1,7 +1,6 @@
 using KChief.Platform.Core.Interfaces;
 using KChief.Platform.Core.Models;
-using Serilog;
-using Serilog.Context;
+using Microsoft.Extensions.Logging;
 
 namespace KChief.AlarmSystem.Services;
 
@@ -57,6 +56,13 @@ public class EnhancedAlarmService : IAlarmService
         return _baseAlarmService.GetAlarmByIdAsync(alarmId);
     }
 
+    // Interface implementation
+    public async Task<Alarm> CreateAlarmAsync(string title, string description, AlarmSeverity severity, string? vesselId = null, string? engineId = null, string? sensorId = null)
+    {
+        return await CreateAlarmAsync(title, description, severity, vesselId, engineId, sensorId, null, null, null, null, null);
+    }
+
+    // Enhanced version with additional parameters
     public async Task<Alarm> CreateAlarmAsync(
         string title,
         string description,
@@ -70,9 +76,7 @@ public class EnhancedAlarmService : IAlarmService
         AlarmEscalationConfig? escalationConfig = null,
         AlarmGroupingConfig? groupingConfig = null)
     {
-        using (LogContext.PushProperty("Title", title))
-        using (LogContext.PushProperty("Severity", severity))
-        {
+        _logger.LogDebug("Creating alarm: {Title} with severity {Severity}", title, severity);
             // Create alarm using base service
             var alarm = await _baseAlarmService.CreateAlarmAsync(
                 title, description, severity, vesselId, engineId, sensorId);
@@ -95,9 +99,8 @@ public class EnhancedAlarmService : IAlarmService
                 alarm.GroupId = groupId;
             }
 
-            Log.Information("Enhanced alarm created: {AlarmId} - {Title}", alarm.Id, title);
-            return alarm;
-        }
+        _logger.LogInformation("Enhanced alarm created: {AlarmId} - {Title}", alarm.Id, title);
+        return alarm;
     }
 
     public Task<bool> AcknowledgeAlarmAsync(string alarmId, string acknowledgedBy)
