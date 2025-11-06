@@ -39,8 +39,7 @@ public class AlarmGroupingService
         // Add a small async operation to satisfy the async requirement
         await Task.Delay(1);
 
-        using (LogContext.PushProperty("AlarmId", alarm.Id))
-        using (LogContext.PushProperty("Strategy", groupingConfig.Strategy))
+        _logger.LogDebug("Grouping alarm {AlarmId} with strategy {Strategy}", alarm.Id, groupingConfig.Strategy);
         {
             // Find existing group or create new one
             var group = FindOrCreateGroup(alarm, groupingConfig);
@@ -52,14 +51,14 @@ public class AlarmGroupingService
                     group.AlarmIds.Add(alarm.Id);
                     _alarmToGroupMap[alarm.Id] = group.Id;
 
-                    Log.Debug(
+                    _logger.LogDebug(
                         "Alarm {AlarmId} added to group {GroupId} ({GroupName})",
                         alarm.Id, group.Id, group.Name);
 
                     // Check if group is full
                     if (group.AlarmIds.Count >= groupingConfig.MaxAlarmsPerGroup)
                     {
-                        Log.Warning(
+                        _logger.LogWarning(
                             "Alarm group {GroupId} has reached maximum capacity ({MaxAlarms})",
                             group.Id, groupingConfig.MaxAlarmsPerGroup);
                     }
@@ -109,7 +108,7 @@ public class AlarmGroupingService
         _groups[newGroup.Id] = newGroup;
         _alarmToGroupMap[alarm.Id] = newGroup.Id;
 
-        Log.Information(
+        _logger.LogInformation(
             "Created new alarm group {GroupId} ({GroupName}) with strategy {Strategy}",
             newGroup.Id, newGroup.Name, groupingConfig.Strategy);
 
@@ -223,7 +222,7 @@ public class AlarmGroupingService
         if (allAcknowledged)
         {
             group.Status = AlarmGroupStatus.Acknowledged;
-            Log.Information("Alarm group {GroupId} acknowledged", groupId);
+            _logger.LogInformation("Alarm group {GroupId} acknowledged", groupId);
         }
 
         return allAcknowledged;

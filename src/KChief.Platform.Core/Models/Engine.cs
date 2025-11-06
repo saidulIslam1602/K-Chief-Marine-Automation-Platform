@@ -76,6 +76,8 @@ public enum EngineStatus
     Running,
     Stopping,
     Fault,
-    Maintenance
+    Maintenance,
+    Error,
+    Overheated
 }
 

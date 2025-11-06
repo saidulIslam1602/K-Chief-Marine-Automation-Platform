@@ -52,10 +52,7 @@ public class AlarmEscalationService
 
         _escalationStates[alarm.Id] = state;
 
-        using (LogContext.PushProperty("AlarmId", alarm.Id))
-        {
-            Log.Debug("Alarm registered for escalation: {AlarmId}", alarm.Id);
-        }
+        _logger.LogDebug("Alarm registered for escalation: {AlarmId}", alarm.Id);
     }
 
     /// <summary>
@@ -106,23 +103,18 @@ public class AlarmEscalationService
             return;
         }
 
-        using (LogContext.PushProperty("AlarmId", alarm.Id))
-        using (LogContext.PushProperty("PreviousSeverity", alarm.Severity))
-        using (LogContext.PushProperty("NewSeverity", newSeverity))
-        {
-            // Update alarm severity (this would require extending AlarmService)
-            // For now, we'll log the escalation
-            Log.Warning(
-                "Alarm {AlarmId} escalated from {PreviousSeverity} to {NewSeverity} (Level {Level})",
-                alarm.Id, alarm.Severity, newSeverity, escalationState.CurrentLevel + 1);
+        // Update alarm severity (this would require extending AlarmService)
+        // For now, we'll log the escalation
+        _logger.LogWarning(
+            "Alarm {AlarmId} escalated from {PreviousSeverity} to {NewSeverity} (Level {Level})",
+            alarm.Id, alarm.Severity, newSeverity, escalationState.CurrentLevel + 1);
 
-            escalationState.CurrentLevel++;
-            escalationState.CurrentSeverity = newSeverity;
-            escalationState.LastEscalationTime = DateTime.UtcNow;
+        escalationState.CurrentLevel++;
+        escalationState.CurrentSeverity = newSeverity;
+        escalationState.LastEscalationTime = DateTime.UtcNow;
 
-            // Send notifications
-            SendEscalationNotifications(alarm, escalationState);
-        }
+        // Send notifications
+        SendEscalationNotifications(alarm, escalationState);
     }
 
     /// <summary>
@@ -132,7 +124,7 @@ public class AlarmEscalationService
     {
         foreach (var channel in escalationState.EscalationConfig.NotificationChannels)
         {
-            Log.Information(
+            _logger.LogInformation(
                 "Sending escalation notification via {Channel} for alarm {AlarmId}",
                 channel, alarm.Id);
             // Notification implementation would go here

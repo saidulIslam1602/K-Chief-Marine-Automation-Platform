@@ -192,10 +192,16 @@ public class CachedVesselRepository : IVesselRepository
     {
         const string cacheKey = "vessel:list:withengines";
         
-        return await _cacheService.GetOrSetAsync(
-            cacheKey,
-            async () => await _repository.GetVesselsWithEnginesAsync(),
-            _defaultExpiration);
+        var vessels = await _cacheService.GetAsync<IEnumerable<Vessel>>(cacheKey);
+        if (vessels != null)
+            return vessels;
+
+        vessels = await _repository.GetVesselsWithEnginesAsync();
+        if (vessels != null)
+        {
+            await _cacheService.SetAsync(cacheKey, vessels, _defaultExpiration);
+        }
+        return vessels ?? Enumerable.Empty<Vessel>();
     }
 
     public async Task<Vessel?> GetVesselWithEnginesAsync(string vesselId)

@@ -21,8 +21,8 @@ public class ResilientVesselControlService : IVesselControlService
         {
             Id = "fallback-001",
             Name = "Emergency Vessel",
-            Type = VesselType.CargoShip,
-            Status = VesselStatus.Docked,
+            Type = "CargoShip",
+            Status = VesselStatus.Offline,
             Location = "Safe Harbor",
             Length = 100,
             Width = 20,
@@ -55,247 +55,118 @@ public class ResilientVesselControlService : IVesselControlService
 
     public async Task<Vessel?> GetVesselByIdAsync(string vesselId)
     {
-        return await _resilienceService.ExecuteVesselControlAsync(
-            async (context, cancellationToken) =>
+        try
+        {
+            _logger.LogDebug("Executing GetVesselById operation for vessel {VesselId}", vesselId);
+            
+            var vessel = await _baseService.GetVesselByIdAsync(vesselId);
+            
+            // If vessel not found and we're in degraded mode, return fallback
+            if (vessel == null && _fallbackVessels.ContainsKey(vesselId))
             {
-                using (LogContext.PushProperty("Operation", "GetVesselById"))
-                using (LogContext.PushProperty("VesselId", vesselId))
-                {
-                    Log.Debug("Executing GetVesselById operation for vessel {VesselId}", vesselId);
-                    
-                    var vessel = await _baseService.GetVesselByIdAsync(vesselId);
-                    
-                    // If vessel not found and we're in degraded mode, return fallback
-                    if (vessel == null && _fallbackVessels.ContainsKey(vesselId))
-                    {
-                        Log.Warning("Primary vessel data unavailable, returning fallback data for {VesselId}", vesselId);
-                        return _fallbackVessels[vesselId];
-                    }
-                    
-                    return vessel;
-                }
-            },
-            "GetVesselById");
+                _logger.LogWarning("Primary vessel data unavailable, returning fallback data for {VesselId}", vesselId);
+                return _fallbackVessels[vesselId];
+            }
+            
+            return vessel;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to get vessel {VesselId}, returning fallback if available", vesselId);
+            return _fallbackVessels.ContainsKey(vesselId) ? _fallbackVessels[vesselId] : null;
+        }
     }
 
     public async Task<IEnumerable<Engine>> GetVesselEnginesAsync(string vesselId)
     {
-        return await _resilienceService.ExecuteVesselControlAsync(
-            async (context, cancellationToken) =>
+        try
+        {
+            _logger.LogDebug("Executing GetVesselEngines operation for vessel {VesselId}", vesselId);
+            return await _baseService.GetVesselEnginesAsync(vesselId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to get engines for vessel {VesselId}, returning fallback engines", vesselId);
+            
+            // Return fallback engines
+            return new[]
             {
-                using (LogContext.PushProperty("Operation", "GetVesselEngines"))
-                using (LogContext.PushProperty("VesselId", vesselId))
+                new Engine
                 {
-                    Log.Debug("Executing GetVesselEngines operation for vessel {VesselId}", vesselId);
-                    
-                    try
-                    {
-                        return await _baseService.GetVesselEnginesAsync(vesselId);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Warning(ex, "Failed to get engines for vessel {VesselId}, returning fallback engines", vesselId);
-                        
-                        // Return fallback engines
-                        return new[]
-                        {
-                            new Engine
-                            {
-                                Id = $"fallback-engine-{vesselId}",
-                                Name = "Emergency Engine",
-                                Type = EngineType.Diesel,
-                                VesselId = vesselId,
-                                RPM = 0,
-                                MaxRPM = 1800,
-                                Temperature = 20,
-                                IsRunning = false
-                            }
-                        };
-                    }
+                    Id = $"fallback-engine-{vesselId}",
+                    Name = "Emergency Engine",
+                    Type = "Diesel",
+                    VesselId = vesselId,
+                    RPM = 0,
+                    MaxRPM = 1800,
+                    Temperature = 20,
+                    IsRunning = false
                 }
-            },
-            "GetVesselEngines");
+            };
+        }
     }
 
     public async Task<IEnumerable<Sensor>> GetVesselSensorsAsync(string vesselId)
     {
-        return await _resilienceService.ExecuteVesselControlAsync(
-            async (context, cancellationToken) =>
+        try
+        {
+            _logger.LogDebug("Executing GetVesselSensors operation for vessel {VesselId}", vesselId);
+            return await _baseService.GetVesselSensorsAsync(vesselId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to get sensors for vessel {VesselId}, returning fallback sensors", vesselId);
+            
+            // Return fallback sensors with safe default values
+            return new[]
             {
-                using (LogContext.PushProperty("Operation", "GetVesselSensors"))
-                using (LogContext.PushProperty("VesselId", vesselId))
+                new Sensor
                 {
-                    Log.Debug("Executing GetVesselSensors operation for vessel {VesselId}", vesselId);
-                    
-                    try
-                    {
-                        return await _baseService.GetVesselSensorsAsync(vesselId);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Warning(ex, "Failed to get sensors for vessel {VesselId}, returning fallback sensors", vesselId);
-                        
-                        // Return fallback sensors with safe default values
-                        return new[]
-                        {
-                            new Sensor
-                            {
-                                Id = $"fallback-sensor-{vesselId}",
-                                Name = "Emergency Sensor",
-                                Type = SensorType.Temperature,
-                                VesselId = vesselId,
-                                Value = 20.0,
-                                Unit = "°C",
-                                IsActive = true,
-                                LastReadingAt = DateTime.UtcNow
-                            }
-                        };
-                    }
+                    Id = $"fallback-sensor-{vesselId}",
+                    Name = "Emergency Sensor",
+                    Type = "Temperature",
+                    Value = 20.0,
+                    Unit = "°C",
+                    IsActive = true,
+                    LastUpdated = DateTime.UtcNow
                 }
-            },
-            "GetVesselSensors");
+            };
+        }
     }
 
-    public async Task<bool> StartVesselAsync(string vesselId)
-    {
-        return await _resilienceService.ExecuteVesselControlAsync(
-            async (context, cancellationToken) =>
-            {
-                using (LogContext.PushProperty("Operation", "StartVessel"))
-                using (LogContext.PushProperty("VesselId", vesselId))
-                {
-                    Log.Information("Executing StartVessel operation for vessel {VesselId}", vesselId);
-                    
-                    // Critical operation - validate vessel exists first
-                    var vessel = await _baseService.GetVesselByIdAsync(vesselId);
-                    if (vessel == null)
-                    {
-                        throw new VesselNotFoundException($"Vessel {vesselId} not found");
-                    }
-                    
-                    if (vessel.Status == VesselStatus.InTransit)
-                    {
-                        Log.Warning("Vessel {VesselId} is already running", vesselId);
-                        return true; // Already started
-                    }
-                    
-                    var result = await _baseService.StartVesselAsync(vesselId);
-                    
-                    if (result)
-                    {
-                        Log.Information("Vessel {VesselId} started successfully", vesselId);
-                    }
-                    else
-                    {
-                        Log.Error("Failed to start vessel {VesselId}", vesselId);
-                    }
-                    
-                    return result;
-                }
-            },
-            "StartVessel");
-    }
 
-    public async Task<bool> StopVesselAsync(string vesselId)
-    {
-        return await _resilienceService.ExecuteVesselControlAsync(
-            async (context, cancellationToken) =>
-            {
-                using (LogContext.PushProperty("Operation", "StopVessel"))
-                using (LogContext.PushProperty("VesselId", vesselId))
-                {
-                    Log.Information("Executing StopVessel operation for vessel {VesselId}", vesselId);
-                    
-                    // Critical operation - validate vessel exists first
-                    var vessel = await _baseService.GetVesselByIdAsync(vesselId);
-                    if (vessel == null)
-                    {
-                        throw new VesselNotFoundException($"Vessel {vesselId} not found");
-                    }
-                    
-                    if (vessel.Status == VesselStatus.Docked)
-                    {
-                        Log.Warning("Vessel {VesselId} is already stopped", vesselId);
-                        return true; // Already stopped
-                    }
-                    
-                    var result = await _baseService.StopVesselAsync(vesselId);
-                    
-                    if (result)
-                    {
-                        Log.Information("Vessel {VesselId} stopped successfully", vesselId);
-                    }
-                    else
-                    {
-                        Log.Error("Failed to stop vessel {VesselId}", vesselId);
-                    }
-                    
-                    return result;
-                }
-            },
-            "StopVessel");
-    }
 
     public async Task<bool> SetEngineRPMAsync(string vesselId, string engineId, int rpm)
     {
-        return await _resilienceService.ExecuteVesselControlAsync(
-            async (context, cancellationToken) =>
+        try
+        {
+            _logger.LogInformation("Executing SetEngineRPM operation for engine {EngineId} on vessel {VesselId} to {RPM} RPM",
+                engineId, vesselId, rpm);
+            
+            // Validate RPM range
+            if (rpm < 0 || rpm > 3000)
             {
-                using (LogContext.PushProperty("Operation", "SetEngineRPM"))
-                using (LogContext.PushProperty("VesselId", vesselId))
-                using (LogContext.PushProperty("EngineId", engineId))
-                using (LogContext.PushProperty("RPM", rpm))
-                {
-                    Log.Information("Executing SetEngineRPM operation for engine {EngineId} on vessel {VesselId} to {RPM} RPM",
-                        engineId, vesselId, rpm);
-                    
-                    // Validate RPM range
-                    if (rpm < 0 || rpm > 3000)
-                    {
-                        throw new VesselOperationException($"Invalid RPM value: {rpm}. Must be between 0 and 3000.");
-                    }
-                    
-                    var result = await _baseService.SetEngineRPMAsync(vesselId, engineId, rpm);
-                    
-                    if (result)
-                    {
-                        Log.Information("Engine {EngineId} RPM set to {RPM} successfully", engineId, rpm);
-                    }
-                    else
-                    {
-                        Log.Error("Failed to set engine {EngineId} RPM to {RPM}", engineId, rpm);
-                    }
-                    
-                    return result;
-                }
-            },
-            "SetEngineRPM");
-    }
-
-    public async Task<VesselStatus> GetVesselStatusAsync(string vesselId)
-    {
-        return await _resilienceService.ExecuteVesselControlAsync(
-            async (context, cancellationToken) =>
+                throw new VesselOperationException(vesselId, "SetEngineRPM");
+            }
+            
+            var result = await _baseService.SetEngineRPMAsync(vesselId, engineId, rpm);
+            
+            if (result)
             {
-                using (LogContext.PushProperty("Operation", "GetVesselStatus"))
-                using (LogContext.PushProperty("VesselId", vesselId))
-                {
-                    Log.Debug("Executing GetVesselStatus operation for vessel {VesselId}", vesselId);
-                    
-                    try
-                    {
-                        return await _baseService.GetVesselStatusAsync(vesselId);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Warning(ex, "Failed to get status for vessel {VesselId}, returning fallback status", vesselId);
-                        
-                        // Return safe fallback status
-                        return VesselStatus.Unknown;
-                    }
-                }
-            },
-            "GetVesselStatus");
+                _logger.LogInformation("Engine {EngineId} RPM set to {RPM} successfully", engineId, rpm);
+            }
+            else
+            {
+                _logger.LogError("Failed to set engine {EngineId} RPM to {RPM}", engineId, rpm);
+            }
+            
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error setting engine {EngineId} RPM to {RPM}", engineId, rpm);
+            return false;
+        }
     }
 
     /// <summary>
@@ -303,34 +174,39 @@ public class ResilientVesselControlService : IVesselControlService
     /// </summary>
     public async Task<bool> EmergencyStopAsync(string vesselId)
     {
-        using (LogContext.PushProperty("Operation", "EmergencyStop"))
-        using (LogContext.PushProperty("VesselId", vesselId))
+        _logger.LogDebug("Starting EmergencyStop operation for vessel {VesselId}", vesselId);
         {
-            Log.Error("EMERGENCY STOP initiated for vessel {VesselId}", vesselId);
+            _logger.LogError("EMERGENCY STOP initiated for vessel {VesselId}", vesselId);
             
             try
             {
                 // Emergency operations bypass normal resilience patterns for speed
                 // but still have basic retry for critical safety
-                var result = await _baseService.StopVesselAsync(vesselId);
+                // Emergency stop - use StopEngineAsync for all engines instead of StopVesselAsync
+                var engines = await _baseService.GetVesselEnginesAsync(vesselId);
+                bool allStopped = true;
+                foreach (var engine in engines)
+                {
+                    var stopped = await _baseService.StopEngineAsync(vesselId, engine.Id);
+                    if (!stopped) allStopped = false;
+                }
+                var result = allStopped;
                 
                 if (result)
                 {
-                    Log.Error("EMERGENCY STOP completed successfully for vessel {VesselId}", vesselId);
+                    _logger.LogError("EMERGENCY STOP completed successfully for vessel {VesselId}", vesselId);
                 }
                 else
                 {
-                    Log.Fatal("EMERGENCY STOP FAILED for vessel {VesselId} - MANUAL INTERVENTION REQUIRED", vesselId);
+                    _logger.LogCritical("EMERGENCY STOP FAILED for vessel {VesselId} - MANUAL INTERVENTION REQUIRED", vesselId);
                 }
                 
                 return result;
             }
             catch (Exception ex)
             {
-                Log.Fatal(ex, "EMERGENCY STOP EXCEPTION for vessel {VesselId} - MANUAL INTERVENTION REQUIRED", vesselId);
-                throw new VesselOperationException($"Emergency stop failed for vessel {vesselId}", ex)
-                    .WithContext("VesselId", vesselId)
-                    .WithContext("Operation", "EmergencyStop")
+                _logger.LogCritical(ex, "EMERGENCY STOP EXCEPTION for vessel {VesselId} - MANUAL INTERVENTION REQUIRED", vesselId);
+                throw new VesselOperationException(vesselId, "EmergencyStop")
                     .WithContext("Severity", "Critical");
             }
         }

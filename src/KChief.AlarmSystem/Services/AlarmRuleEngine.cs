@@ -36,7 +36,7 @@ public class AlarmRuleEngine
         }
 
         _rules[rule.Id] = rule;
-        Log.Information("Alarm rule registered: {RuleId} - {RuleName}", rule.Id, rule.Name);
+        _logger.LogInformation("Alarm rule registered: {RuleId} - {RuleName}", rule.Id, rule.Name);
     }
 
     /// <summary>
@@ -46,7 +46,7 @@ public class AlarmRuleEngine
     {
         if (_rules.TryRemove(ruleId, out var rule))
         {
-            Log.Information("Alarm rule unregistered: {RuleId} - {RuleName}", ruleId, rule.Name);
+            _logger.LogInformation("Alarm rule unregistered: {RuleId} - {RuleName}", ruleId, rule.Name);
         }
     }
 
@@ -72,8 +72,7 @@ public class AlarmRuleEngine
     /// </summary>
     public async Task EvaluateSensorValueAsync(string sensorId, double value, string? vesselId = null, string? engineId = null)
     {
-        using (LogContext.PushProperty("SensorId", sensorId))
-        using (LogContext.PushProperty("Value", value))
+        _logger.LogDebug("Evaluating sensor rules for {SensorId} with value {Value}", sensorId, value);
         {
             var applicableRules = _rules.Values
                 .Where(r => r.IsEnabled && 
@@ -93,8 +92,7 @@ public class AlarmRuleEngine
     /// </summary>
     public async Task EvaluateEngineStatusAsync(string engineId, EngineStatus status, Dictionary<string, double>? metrics = null, string? vesselId = null)
     {
-        using (LogContext.PushProperty("EngineId", engineId))
-        using (LogContext.PushProperty("Status", status))
+        _logger.LogDebug("Evaluating engine rules for {EngineId} with status {Status}", engineId, status);
         {
             var applicableRules = _rules.Values
                 .Where(r => r.IsEnabled && 
@@ -251,7 +249,7 @@ public class AlarmRuleEngine
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "Error evaluating condition rule {RuleId}: {Condition}", rule.Id, rule.Condition);
+            _logger.LogError(ex, "Error evaluating condition rule {RuleId}: {Condition}", rule.Id, rule.Condition);
             return false;
         }
     }
@@ -274,8 +272,7 @@ public class AlarmRuleEngine
     /// </summary>
     private async Task TriggerAlarmAsync(AlarmRule rule, double value, string sourceId, string? vesselId, string? engineId)
     {
-        using (LogContext.PushProperty("RuleId", rule.Id))
-        using (LogContext.PushProperty("SourceId", sourceId))
+        _logger.LogDebug("Triggering alarm for rule {RuleId} and source {SourceId}", rule.Id, sourceId);
         {
             var title = FormatTemplate(rule.AlarmTitleTemplate, value, sourceId, vesselId, engineId);
             var description = FormatTemplate(rule.AlarmDescriptionTemplate, value, sourceId, vesselId, engineId);
@@ -291,7 +288,7 @@ public class AlarmRuleEngine
                 engineIdForAlarm,
                 sensorId);
 
-            Log.Information("Alarm triggered by rule {RuleId}: {AlarmId} - {Title}", rule.Id, alarm.Id, title);
+            _logger.LogInformation("Alarm triggered by rule {RuleId}: {AlarmId} - {Title}", rule.Id, alarm.Id, title);
         }
     }
 
