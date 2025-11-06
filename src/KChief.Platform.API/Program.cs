@@ -1,8 +1,12 @@
+using Microsoft.EntityFrameworkCore;
 using KChief.Platform.API.Hubs;
 using KChief.Platform.API.Services;
 using KChief.Platform.Core.Interfaces;
 using KChief.AlarmSystem.Services;
+using KChief.DataAccess.Data;
+using KChief.DataAccess.Interfaces;
 using KChief.DataAccess.Services;
+using KChief.DataAccess.Repositories;
 using KChief.Protocols.Modbus.Services;
 using KChief.Protocols.OPC.Services;
 using KChief.VesselControl.Services;
@@ -28,8 +32,20 @@ public class Program
             });
         });
 
+        // Add Entity Framework
+        builder.Services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
         // Add SignalR
         builder.Services.AddSignalR();
+
+        // Register repositories and Unit of Work
+        builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+        builder.Services.AddScoped<IVesselRepository, VesselRepository>();
+        builder.Services.AddScoped<IEngineRepository, EngineRepository>();
+        builder.Services.AddScoped<ISensorRepository, SensorRepository>();
+        builder.Services.AddScoped<IAlarmRepository, AlarmRepository>();
+        builder.Services.AddScoped<IMessageBusEventRepository, MessageBusEventRepository>();
 
         // Register application services
         builder.Services.AddScoped<IVesselControlService, VesselControlService>();

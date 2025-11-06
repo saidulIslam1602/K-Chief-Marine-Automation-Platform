@@ -40,7 +40,7 @@ public interface IVesselControlService
     /// <summary>
     /// Sets the RPM for an engine.
     /// </summary>
-    Task<bool> SetEngineRpmAsync(string vesselId, string engineId, int rpm);
+    Task<bool> SetEngineRPMAsync(string vesselId, string engineId, int rpm);
 
     /// <summary>
     /// Gets all sensors for a specific vessel.

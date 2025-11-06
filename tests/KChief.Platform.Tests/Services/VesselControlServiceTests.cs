@@ -101,7 +101,7 @@ public class VesselControlServiceTests
         var engine = await _service.GetEngineByIdAsync(vesselId, engineId);
         Assert.NotNull(engine);
         Assert.Equal(EngineStatus.Running, engine.Status);
-        Assert.True(engine.Rpm > 0);
+        Assert.True(engine.RPM > 0);
     }
 
     [Fact]
@@ -137,7 +137,7 @@ public class VesselControlServiceTests
         var engine = await _service.GetEngineByIdAsync(vesselId, engineId);
         Assert.NotNull(engine);
         Assert.Equal(EngineStatus.Stopped, engine.Status);
-        Assert.Equal(0, engine.Rpm);
+        Assert.Equal(0, engine.RPM);
     }
 
     [Fact]
@@ -155,49 +155,49 @@ public class VesselControlServiceTests
     }
 
     [Fact]
-    public async Task SetEngineRpmAsync_WithValidRpm_ReturnsTrue()
+    public async Task SetEngineRPMAsync_WithValidRPM_ReturnsTrue()
     {
         // Arrange
         var vesselId = "vessel-001";
         var engineId = "engine-001";
-        var targetRpm = 800;
+        var targetRPM = 800;
 
         // Act
-        var result = await _service.SetEngineRpmAsync(vesselId, engineId, targetRpm);
+        var result = await _service.SetEngineRPMAsync(vesselId, engineId, targetRPM);
 
         // Assert
         Assert.True(result);
 
         var engine = await _service.GetEngineByIdAsync(vesselId, engineId);
         Assert.NotNull(engine);
-        Assert.Equal(targetRpm, engine.Rpm);
+        Assert.Equal(targetRPM, engine.RPM);
     }
 
     [Fact]
-    public async Task SetEngineRpmAsync_WithInvalidRpm_ReturnsFalse()
+    public async Task SetEngineRPMAsync_WithInvalidRPM_ReturnsFalse()
     {
         // Arrange
         var vesselId = "vessel-001";
         var engineId = "engine-001";
-        var invalidRpm = 2000; // Exceeds max RPM
+        var invalidRPM = 2000; // Exceeds max RPM
 
         // Act
-        var result = await _service.SetEngineRpmAsync(vesselId, engineId, invalidRpm);
+        var result = await _service.SetEngineRPMAsync(vesselId, engineId, invalidRPM);
 
         // Assert
         Assert.False(result);
     }
 
     [Fact]
-    public async Task SetEngineRpmAsync_WithStoppedEngine_ReturnsFalse()
+    public async Task SetEngineRPMAsync_WithStoppedEngine_ReturnsFalse()
     {
         // Arrange
         var vesselId = "vessel-002";
         var engineId = "engine-003";
-        var targetRpm = 500;
+        var targetRPM = 500;
 
         // Act
-        var result = await _service.SetEngineRpmAsync(vesselId, engineId, targetRpm);
+        var result = await _service.SetEngineRPMAsync(vesselId, engineId, targetRPM);
 
         // Assert
         Assert.False(result);

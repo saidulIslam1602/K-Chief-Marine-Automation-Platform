@@ -65,7 +65,7 @@ public class ModernizedVesselController
     /// <summary>
     /// Sets engine RPM with validation and proper error handling.
     /// </summary>
-    public async Task<bool> SetEngineRpmAsync(string vesselId, string engineId, int rpm)
+    public async Task<bool> SetEngineRPMAsync(string vesselId, string engineId, int rpm)
     {
         // Input validation
         if (string.IsNullOrWhiteSpace(vesselId))
@@ -95,7 +95,7 @@ public class ModernizedVesselController
             _logger.LogInformation("Setting RPM to {Rpm} for engine {EngineId} on vessel {VesselId}", 
                 rpm, engineId, vesselId);
 
-            var result = await _vesselControlService.SetEngineRpmAsync(vesselId, engineId, rpm);
+            var result = await _vesselControlService.SetEngineRPMAsync(vesselId, engineId, rpm);
 
             if (result)
             {

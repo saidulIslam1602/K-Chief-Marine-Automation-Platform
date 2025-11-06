@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\KChief.Platform.Core\KChief.Platform.Core.csproj" />
+    <ProjectReference Include="..\KChief.DataAccess\KChief.DataAccess.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

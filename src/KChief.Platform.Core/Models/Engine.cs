@@ -26,14 +26,24 @@ public class Engine
     public EngineStatus Status { get; set; } = EngineStatus.Stopped;
 
     /// <summary>
+    /// ID of the vessel this engine belongs to.
+    /// </summary>
+    public string VesselId { get; set; } = string.Empty;
+
+    /// <summary>
     /// Current RPM (Revolutions Per Minute).
     /// </summary>
-    public int Rpm { get; set; }
+    public int RPM { get; set; }
 
     /// <summary>
     /// Maximum rated RPM for this engine.
     /// </summary>
-    public int MaxRpm { get; set; } = 1000;
+    public int MaxRPM { get; set; } = 1000;
+
+    /// <summary>
+    /// Indicates if the engine is currently running.
+    /// </summary>
+    public bool IsRunning { get; set; }
 
     /// <summary>
     /// Engine temperature in Celsius.

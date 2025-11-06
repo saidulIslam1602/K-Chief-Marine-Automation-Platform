@@ -127,12 +127,12 @@ public class EnginesController : ControllerBase
             return BadRequest($"Engine must be running to set RPM. Current status: {engine.Status}");
         }
 
-        if (request.Rpm < 0 || request.Rpm > engine.MaxRpm)
+        if (request.Rpm < 0 || request.Rpm > engine.MaxRPM)
         {
-            return BadRequest($"RPM must be between 0 and {engine.MaxRpm}.");
+            return BadRequest($"RPM must be between 0 and {engine.MaxRPM}.");
         }
 
-        var result = await _vesselControlService.SetEngineRpmAsync(vesselId, engineId, request.Rpm);
+        var result = await _vesselControlService.SetEngineRPMAsync(vesselId, engineId, request.Rpm);
         
         if (result)
         {

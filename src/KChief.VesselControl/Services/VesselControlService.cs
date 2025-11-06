@@ -64,7 +64,7 @@ public class VesselControlService : IVesselControlService
                 Task.Delay(2000).ContinueWith(_ =>
                 {
                     engine.Status = EngineStatus.Running;
-                    engine.Rpm = 500;
+                    engine.RPM = 500;
                     engine.Temperature = 60 + _random.NextDouble() * 20;
                     engine.OilPressure = 3.0 + _random.NextDouble() * 1.0;
                     engine.FuelConsumption = 50 + _random.NextDouble() * 20;
@@ -91,7 +91,7 @@ public class VesselControlService : IVesselControlService
                 Task.Delay(1500).ContinueWith(_ =>
                 {
                     engine.Status = EngineStatus.Stopped;
-                    engine.Rpm = 0;
+                    engine.RPM = 0;
                     engine.Temperature = 25 + _random.NextDouble() * 10;
                     engine.OilPressure = 0;
                     engine.FuelConsumption = 0;
@@ -104,21 +104,21 @@ public class VesselControlService : IVesselControlService
         return Task.FromResult(false);
     }
 
-    public Task<bool> SetEngineRpmAsync(string vesselId, string engineId, int rpm)
+    public Task<bool> SetEngineRPMAsync(string vesselId, string engineId, int rpm)
     {
         if (_vessels.TryGetValue(vesselId, out var vessel))
         {
             var engine = vessel.Engines.FirstOrDefault(e => e.Id == engineId);
             if (engine != null && engine.Status == EngineStatus.Running)
             {
-                if (rpm < 0 || rpm > engine.MaxRpm)
+                if (rpm < 0 || rpm > engine.MaxRPM)
                 {
                     return Task.FromResult(false);
                 }
 
-                engine.Rpm = rpm;
-                engine.Temperature = 60 + (rpm / engine.MaxRpm) * 40 + _random.NextDouble() * 10;
-                engine.FuelConsumption = 30 + (rpm / engine.MaxRpm) * 70 + _random.NextDouble() * 10;
+                engine.RPM = rpm;
+                engine.Temperature = 60 + (rpm / engine.MaxRPM) * 40 + _random.NextDouble() * 10;
+                engine.FuelConsumption = 30 + (rpm / engine.MaxRPM) * 70 + _random.NextDouble() * 10;
                 engine.LastUpdated = DateTime.UtcNow;
 
                 return Task.FromResult(true);
@@ -196,8 +196,8 @@ public class VesselControlService : IVesselControlService
                             Name = "Main Engine 1",
                             Type = "Diesel",
                             Status = EngineStatus.Running,
-                            Rpm = 750,
-                            MaxRpm = 1000,
+                            RPM = 750,
+                            MaxRPM = 1000,
                             Temperature = 85.5,
                             OilPressure = 3.5,
                             FuelConsumption = 75.2,
@@ -209,8 +209,8 @@ public class VesselControlService : IVesselControlService
                             Name = "Auxiliary Engine 1",
                             Type = "Diesel",
                             Status = EngineStatus.Running,
-                            Rpm = 600,
-                            MaxRpm = 800,
+                            RPM = 600,
+                            MaxRPM = 800,
                             Temperature = 70.0,
                             OilPressure = 3.2,
                             FuelConsumption = 45.0,
@@ -236,8 +236,8 @@ public class VesselControlService : IVesselControlService
                             Name = "Main Engine 1",
                             Type = "Diesel",
                             Status = EngineStatus.Stopped,
-                            Rpm = 0,
-                            MaxRpm = 1200,
+                            RPM = 0,
+                            MaxRPM = 1200,
                             Temperature = 25.0,
                             OilPressure = 0,
                             FuelConsumption = 0,

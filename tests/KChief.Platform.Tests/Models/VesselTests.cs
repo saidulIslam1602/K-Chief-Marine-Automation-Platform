@@ -57,26 +57,26 @@ public class EngineTests
         Assert.Equal(string.Empty, engine.Name);
         Assert.Equal(string.Empty, engine.Type);
         Assert.Equal(EngineStatus.Stopped, engine.Status);
-        Assert.Equal(0, engine.Rpm);
-        Assert.Equal(1000, engine.MaxRpm);
+        Assert.Equal(0, engine.RPM);
+        Assert.Equal(1000, engine.MaxRPM);
         Assert.Equal(0, engine.Temperature);
         Assert.Equal(0, engine.OilPressure);
         Assert.Equal(0, engine.FuelConsumption);
     }
 
     [Fact]
-    public void Engine_WithValidRpm_IsWithinLimits()
+    public void Engine_WithValidRPM_IsWithinLimits()
     {
         // Arrange
         var engine = new Engine
         {
-            MaxRpm = 1000,
-            Rpm = 750
+            MaxRPM = 1000,
+            RPM = 750
         };
 
         // Assert
-        Assert.True(engine.Rpm >= 0);
-        Assert.True(engine.Rpm <= engine.MaxRpm);
+        Assert.True(engine.RPM >= 0);
+        Assert.True(engine.RPM <= engine.MaxRPM);
     }
 }
 

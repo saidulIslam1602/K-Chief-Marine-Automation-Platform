@@ -100,6 +100,9 @@ K-Chief-Marine-Automation-Platform/
 - Message bus integration (RabbitMQ)
 - Legacy code modernization examples
 - Comprehensive documentation
+- Database persistence with Entity Framework Core
+- Repository and Unit of Work patterns
+- SQLite database with migrations and seeding
 
 ### Architecture Highlights
 
@@ -120,6 +123,7 @@ Comprehensive documentation is available in the `docs/` directory:
 - [Deployment Guide](docs/DEPLOYMENT.md) - Deployment instructions
 - [Developer Guide](docs/DEVELOPER_GUIDE.md) - Development guidelines
 - [Legacy Modernization](docs/LEGACY_MODERNIZATION.md) - Code modernization examples
+- [Database Guide](docs/DATABASE.md) - Entity Framework implementation guide
 
 ## Development Guidelines
 

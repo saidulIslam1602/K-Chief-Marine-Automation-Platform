@@ -3,7 +3,7 @@ namespace KChief.Platform.Core.Models;
 /// <summary>
 /// Base class for message bus events.
 /// </summary>
-public abstract class MessageBusEvent
+public class MessageBusEvent
 {
     /// <summary>
     /// Event ID.
@@ -19,6 +19,16 @@ public abstract class MessageBusEvent
     /// Event type name.
     /// </summary>
     public string EventType { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Source of the event.
+    /// </summary>
+    public string Source { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Event data as JSON string.
+    /// </summary>
+    public string Data { get; set; } = string.Empty;
 }
 
 /// <summary>

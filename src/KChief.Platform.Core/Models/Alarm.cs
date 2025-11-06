@@ -64,6 +64,11 @@ public class Alarm
     /// Timestamp when the alarm was cleared.
     /// </summary>
     public DateTime? ClearedAt { get; set; }
+
+    /// <summary>
+    /// User who cleared the alarm.
+    /// </summary>
+    public string? ClearedBy { get; set; }
 }
 
 /// <summary>
