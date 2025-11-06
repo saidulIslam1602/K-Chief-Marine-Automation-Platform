@@ -5,6 +5,7 @@ using KChief.Platform.API.Hubs;
 using KChief.Platform.API.Services;
 using KChief.Platform.API.HealthChecks;
 using KChief.Platform.API.Middleware;
+using KChief.Platform.API.Filters;
 using KChief.Platform.Core.Interfaces;
 using KChief.AlarmSystem.Services;
 using KChief.DataAccess.Data;
@@ -24,7 +25,12 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container
-        builder.Services.AddControllers();
+        builder.Services.AddControllers(options =>
+        {
+            // Add global filters
+            options.Filters.Add<ModelValidationFilter>();
+            options.Filters.Add<OperationCancelledExceptionFilter>();
+        });
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(c =>
         {
@@ -48,6 +54,9 @@ public class Program
 
         // Add Performance Monitoring
         builder.Services.AddSingleton<PerformanceMonitoringService>();
+
+        // Add Error Logging Service
+        builder.Services.AddScoped<ErrorLoggingService>();
 
         // Add Health Checks
         builder.Services.AddHealthChecks()
@@ -121,6 +130,9 @@ public class Program
 
         app.UseHttpsRedirection();
         app.UseCors();
+
+        // Add global exception handling middleware (must be early in pipeline)
+        app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
         // Add performance monitoring middleware
         app.UseMiddleware<PerformanceMonitoringMiddleware>();

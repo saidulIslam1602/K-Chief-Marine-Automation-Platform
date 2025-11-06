@@ -72,15 +72,18 @@ public class PerformanceMonitoringService : IDisposable
             unit: "%",
             description: "Current CPU usage percentage");
 
-        // Try to initialize CPU counter (may not work on all platforms)
-        try
+        // Try to initialize CPU counter (Windows only)
+        if (OperatingSystem.IsWindows())
         {
-            _cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
-            _cpuCounter.NextValue(); // First call returns 0, so we call it once
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Could not initialize CPU performance counter");
+            try
+            {
+                _cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
+                _cpuCounter.NextValue(); // First call returns 0, so we call it once
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Could not initialize CPU performance counter");
+            }
         }
 
         // Start metrics collection timer
@@ -152,7 +155,7 @@ public class PerformanceMonitoringService : IDisposable
     {
         try
         {
-            if (_cpuCounter != null)
+            if (OperatingSystem.IsWindows() && _cpuCounter != null)
             {
                 return _cpuCounter.NextValue();
             }

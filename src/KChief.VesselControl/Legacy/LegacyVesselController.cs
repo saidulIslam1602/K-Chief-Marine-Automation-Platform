@@ -36,7 +36,7 @@ public static class LegacyVesselController
     // Synchronous operation - blocks thread
     // No error handling
     // Returns object instead of strongly typed
-    public static object GetVessel(string id)
+    public static object? GetVessel(string id)
     {
         if (!_isInitialized)
         {

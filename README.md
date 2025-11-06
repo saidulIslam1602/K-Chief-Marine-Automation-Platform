@@ -115,6 +115,9 @@ K-Chief-Marine-Automation-Platform/
 - Performance metrics and Application Insights integration
 - Kubernetes-ready health probes (liveness, readiness, startup)
 - Real-time monitoring dashboard with Health Checks UI
+- Global exception handling with RFC 7807 Problem Details
+- Custom exception types with context and correlation tracking
+- Structured error logging with comprehensive diagnostics
 
 ### Architecture Highlights
 
@@ -129,6 +132,9 @@ K-Chief-Marine-Automation-Platform/
 - Custom health checks for all dependencies
 - Performance monitoring with metrics collection
 - Request correlation and distributed tracing
+- Production-grade error handling and exception management
+- Standardized error responses with detailed context
+- Security-aware logging with sensitive data protection
 
 ## Documentation
 
@@ -141,6 +147,7 @@ Comprehensive documentation is available in the `docs/` directory:
 - [Legacy Modernization](docs/LEGACY_MODERNIZATION.md) - Code modernization examples
 - [Database Guide](docs/DATABASE.md) - Entity Framework implementation guide
 - [Monitoring Guide](docs/MONITORING.md) - Health checks and observability implementation
+- [Error Handling Guide](docs/ERROR_HANDLING.md) - Exception management and error handling patterns
 
 ## Development Guidelines
 
