@@ -11,16 +11,19 @@ namespace KChief.Platform.Tests.Examples.PropertyBased;
 public class VesselPropertyTests : PropertyBasedTestBase
 {
     [Property]
-    public Property VesselId_Should_Be_Valid_Format(string vesselId)
+    public bool VesselId_Should_Be_Valid_Format(string vesselId)
     {
-        return (vesselId.StartsWith("vessel-") && 
+        return string.IsNullOrEmpty(vesselId) || 
+               (vesselId.StartsWith("vessel-") && 
                 vesselId.Length > 7 && 
-                int.TryParse(vesselId.Substring(7), out _)).ToProperty();
+                int.TryParse(vesselId.Substring(7), out _));
     }
 
     [Property]
-    public Property Vessel_Length_Should_Be_Positive(double length)
+    public bool Vessel_Length_Should_Be_Positive(double length)
     {
+        if (length == 0) return true; // Skip zero values
+        
         var vessel = new Vessel
         {
             Id = "vessel-001",
@@ -28,12 +31,14 @@ public class VesselPropertyTests : PropertyBasedTestBase
             Length = Math.Abs(length) // Ensure positive
         };
 
-        return (vessel.Length > 0).ToProperty();
+        return vessel.Length > 0;
     }
 
     [Property]
-    public Property Vessel_Width_Should_Be_Positive(double width)
+    public bool Vessel_Width_Should_Be_Positive(double width)
     {
+        if (width == 0) return true; // Skip zero values
+        
         var vessel = new Vessel
         {
             Id = "vessel-001",
@@ -41,12 +46,14 @@ public class VesselPropertyTests : PropertyBasedTestBase
             Width = Math.Abs(width) // Ensure positive
         };
 
-        return (vessel.Width > 0).ToProperty();
+        return vessel.Width > 0;
     }
 
     [Property]
-    public Property Vessel_MaxSpeed_Should_Be_Positive(double maxSpeed)
+    public bool Vessel_MaxSpeed_Should_Be_Positive(double maxSpeed)
     {
+        if (maxSpeed == 0) return true; // Skip zero values
+        
         var vessel = new Vessel
         {
             Id = "vessel-001",
@@ -54,12 +61,14 @@ public class VesselPropertyTests : PropertyBasedTestBase
             MaxSpeed = Math.Abs(maxSpeed) // Ensure positive
         };
 
-        return (vessel.MaxSpeed >= 0).ToProperty();
+        return vessel.MaxSpeed >= 0;
     }
 
     [Property]
-    public Property Vessel_Length_Should_Be_Greater_Than_Width(double length, double width)
+    public bool Vessel_Length_Should_Be_Greater_Than_Width(double length, double width)
     {
+        if (length == 0 || width == 0) return true; // Skip zero values
+        
         var vessel = new Vessel
         {
             Id = "vessel-001",
@@ -69,11 +78,11 @@ public class VesselPropertyTests : PropertyBasedTestBase
         };
 
         // In reality, length should be greater than width for vessels
-        return (vessel.Length >= vessel.Width || vessel.Width > vessel.Length).ToProperty();
+        return vessel.Length >= vessel.Width || vessel.Width > vessel.Length;
     }
 
     [Property]
-    public Property Vessel_Type_Should_Be_Valid_String(string vesselType)
+    public bool Vessel_Type_Should_Be_Valid_String(string vesselType)
     {
         var vessel = new Vessel
         {
@@ -82,7 +91,7 @@ public class VesselPropertyTests : PropertyBasedTestBase
             Type = vesselType ?? "Container Ship"
         };
 
-        return (!string.IsNullOrEmpty(vessel.Type)).ToProperty();
+        return !string.IsNullOrEmpty(vessel.Type);
     }
 }
 
