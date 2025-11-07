@@ -100,7 +100,7 @@ public class ResilienceController : ControllerBase
             try
             {
                 var result = await _resilienceService.ExecuteVesselControlAsync(
-                    async (context, cancellationToken) =>
+                    (context, cancellationToken) =>
                     {
                         // Reset counter every 2 minutes for demo purposes
                         if (DateTime.UtcNow - _lastReset > TimeSpan.FromMinutes(2))
@@ -118,14 +118,14 @@ public class ResilienceController : ControllerBase
                         }
 
                         Log.Information("Circuit breaker demo operation succeeded");
-                        return new ResilienceTestResult
+                        return Task.FromResult(new ResilienceTestResult
                         {
                             Success = true,
                             Message = "Circuit breaker is closed - operation successful",
                             Timestamp = DateTime.UtcNow,
                             Pattern = "CircuitBreaker",
                             AttemptCount = _failureCounter
-                        };
+                        });
                     },
                     "CircuitBreakerDemo");
 
@@ -279,7 +279,7 @@ public class ResilienceController : ControllerBase
             try
             {
                 var result = await _resilienceService.ExecuteAlarmSystemAsync(
-                    async (context, cancellationToken) =>
+                    (context, cancellationToken) =>
                     {
                         if (simulateFailure)
                         {
@@ -288,14 +288,14 @@ public class ResilienceController : ControllerBase
                         }
 
                         Log.Information("Primary service succeeded in fallback demo");
-                        return new ResilienceTestResult
+                        return Task.FromResult(new ResilienceTestResult
                         {
                             Success = true,
                             Message = "Primary service response",
                             Timestamp = DateTime.UtcNow,
                             Pattern = "Fallback-Primary",
                             AttemptCount = 1
-                        };
+                        });
                     },
                     "FallbackDemo");
 

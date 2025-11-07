@@ -12,6 +12,7 @@ namespace HMI.Platform.API.Services;
 public class UserService : IUserService
 {
     private readonly ILogger<UserService> _logger;
+    private readonly IConfiguration _configuration;
 
     // In-memory user storage for demonstration (replace with database in production)
     private static readonly List<User> _users = new()
@@ -93,9 +94,10 @@ public class UserService : IUserService
         }
     };
 
-    public UserService(ILogger<UserService> logger)
+    public UserService(ILogger<UserService> logger, IConfiguration configuration)
     {
         _logger = logger;
+        _configuration = configuration;
     }
 
     public async Task<User?> GetUserByIdAsync(string userId)
@@ -495,10 +497,11 @@ public class UserService : IUserService
                     user.UpdatedAt = DateTime.UtcNow;
 
                     // Lock account after too many failed attempts
-                    var maxAttempts = 5; // TODO: Get from configuration
+                    var maxAttempts = _configuration.GetValue<int>("Authentication:Security:MaxFailedLoginAttempts", 5);
                     if (user.FailedLoginAttempts >= maxAttempts)
                     {
-                        user.LockedUntil = DateTime.UtcNow.AddMinutes(30); // TODO: Get from configuration
+                        var lockoutMinutes = _configuration.GetValue<int>("Authentication:Security:AccountLockoutMinutes", 30);
+                        user.LockedUntil = DateTime.UtcNow.AddMinutes(lockoutMinutes);
                         Log.Warning("User account locked due to too many failed login attempts: {UserId}", user.Id);
                     }
 

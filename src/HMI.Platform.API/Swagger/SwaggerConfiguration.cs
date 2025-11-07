@@ -17,7 +17,7 @@ public static class SwaggerConfiguration
     {
         options.SwaggerDoc("v1", new OpenApiInfo
         {
-            Title = "K-Chief Marine Automation Platform API",
+            Title = "HMI Marine Automation Platform API",
             Version = "v1",
             Description = @"
                 Comprehensive API for managing marine vessel automation systems.
@@ -55,7 +55,7 @@ public static class SwaggerConfiguration
             ",
             Contact = new OpenApiContact
             {
-                Name = "K-Chief Support",
+                Name = "HMI Support",
                 Email = "support@kchief.com",
                 Url = new Uri("https://kchief.com/support")
             },
@@ -155,9 +155,9 @@ public static class SwaggerConfiguration
     /// </summary>
     public static void ConfigureSwaggerUI(SwaggerUIOptions options)
     {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "K-Chief API v1");
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "HMI API v1");
         options.RoutePrefix = "swagger";
-        options.DocumentTitle = "K-Chief Marine Automation Platform API";
+        options.DocumentTitle = "HMI Marine Automation Platform API";
         options.DefaultModelsExpandDepth(-1);
         options.DefaultModelExpandDepth(2);
         options.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.List);

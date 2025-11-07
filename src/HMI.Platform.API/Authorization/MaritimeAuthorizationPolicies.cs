@@ -4,7 +4,7 @@ using HMI.Platform.Core.Models;
 namespace HMI.Platform.API.Authorization;
 
 /// <summary>
-/// Defines authorization policies for the K-Chief Marine Automation Platform.
+/// Defines authorization policies for the HMI Marine Automation Platform.
 /// </summary>
 public static class MaritimeAuthorizationPolicies
 {

@@ -37,6 +37,21 @@ public class ApplicationDbContext : DbContext
     /// </summary>
     public DbSet<MessageBusEvent> MessageBusEvents { get; set; }
 
+    /// <summary>
+    /// API keys for service-to-service authentication.
+    /// </summary>
+    public DbSet<ApiKey> ApiKeys { get; set; }
+
+    /// <summary>
+    /// Users in the system.
+    /// </summary>
+    public DbSet<User> Users { get; set; }
+
+    /// <summary>
+    /// Refresh tokens for JWT authentication.
+    /// </summary>
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -107,6 +122,76 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(e => e.EventType);
             entity.HasIndex(e => e.Timestamp);
             entity.HasIndex(e => e.Source);
+        });
+
+        // Configure ApiKey entity
+        modelBuilder.Entity<ApiKey>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasMaxLength(50);
+            entity.Property(e => e.KeyHash).HasMaxLength(256).IsRequired();
+            entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.OwnerId).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.OwnerType).HasMaxLength(20).IsRequired();
+            entity.Property(e => e.Scopes).HasConversion(
+                v => string.Join(',', v),
+                v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList());
+            entity.Property(e => e.AllowedIPs).HasConversion(
+                v => string.Join(',', v),
+                v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList());
+            entity.Property(e => e.Metadata).HasConversion(
+                v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                v => System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new Dictionary<string, string>());
+            entity.HasIndex(e => e.KeyHash).IsUnique();
+            entity.HasIndex(e => e.OwnerId);
+            entity.HasIndex(e => e.IsActive);
+            entity.HasIndex(e => e.ExpiresAt);
+        });
+
+        // Configure User entity
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasMaxLength(50);
+            entity.Property(e => e.Username).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.Email).HasMaxLength(255).IsRequired();
+            entity.Property(e => e.PasswordHash).IsRequired();
+            entity.Property(e => e.FirstName).HasMaxLength(100);
+            entity.Property(e => e.LastName).HasMaxLength(100);
+            entity.Property(e => e.Department).HasMaxLength(100);
+            entity.Property(e => e.JobTitle).HasMaxLength(100);
+            entity.Property(e => e.PhoneNumber).HasMaxLength(20);
+            entity.Property(e => e.Metadata).HasConversion(
+                v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                v => System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new Dictionary<string, string>());
+            entity.HasIndex(e => e.Username).IsUnique();
+            entity.HasIndex(e => e.Email).IsUnique();
+            entity.HasIndex(e => e.IsActive);
+        });
+
+        // Configure RefreshToken entity
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasMaxLength(50);
+            entity.Property(e => e.TokenHash).HasMaxLength(256).IsRequired();
+            entity.Property(e => e.UserId).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.JwtId).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.RevokedReason).HasMaxLength(200);
+            entity.Property(e => e.CreatedByIp).HasMaxLength(45);
+            entity.Property(e => e.UsedByIp).HasMaxLength(45);
+            entity.Property(e => e.RevokedByIp).HasMaxLength(45);
+            entity.Property(e => e.ReplacedByToken).HasMaxLength(256);
+            entity.Property(e => e.Metadata).HasConversion(
+                v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                v => System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new Dictionary<string, string>());
+            entity.HasIndex(e => e.TokenHash).IsUnique();
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.JwtId);
+            entity.HasIndex(e => e.ExpiresAt);
+            entity.HasIndex(e => e.RevokedAt);
+            entity.HasIndex(e => e.UsedAt);
         });
 
         // Seed initial data

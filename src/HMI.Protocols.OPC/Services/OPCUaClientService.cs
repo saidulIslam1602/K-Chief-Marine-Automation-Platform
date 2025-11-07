@@ -22,7 +22,7 @@ public class OPCUaClientService : IOPCUaClient, IDisposable
         {
             var applicationConfiguration = new ApplicationConfiguration
             {
-                ApplicationName = "K-Chief OPC UA Client",
+                ApplicationName = "HMI OPC UA Client",
                 ApplicationUri = Utils.Format(@"urn:{0}:HMIOPCClient", System.Net.Dns.GetHostName()),
                 ApplicationType = ApplicationType.Client,
                 SecurityConfiguration = new SecurityConfiguration
@@ -31,7 +31,7 @@ public class OPCUaClientService : IOPCUaClient, IDisposable
                     {
                         StoreType = "Directory",
                         StorePath = "OPC Foundation/CertificateStores/DefaultApplications",
-                        SubjectName = "K-Chief OPC UA Client"
+                        SubjectName = "HMI OPC UA Client"
                     },
                     TrustedIssuerCertificates = new CertificateTrustList
                     {
@@ -68,7 +68,7 @@ public class OPCUaClientService : IOPCUaClient, IDisposable
                 applicationConfiguration,
                 configuredEndpoint,
                 false,
-                "K-Chief OPC UA Client",
+                "HMI OPC UA Client",
                 60000,
                 userIdentity,
                 null);

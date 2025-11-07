@@ -29,7 +29,7 @@ public class OPCUaConnectionPool : BaseConnectionPool<Session>
             _applicationConfiguration,
             configuredEndpoint,
             false,
-            "K-Chief OPC UA Client",
+            "HMI OPC UA Client",
             60000,
             userIdentity,
             null,
@@ -80,7 +80,7 @@ public class OPCUaConnectionPool : BaseConnectionPool<Session>
     {
         return new ApplicationConfiguration
         {
-            ApplicationName = "K-Chief OPC UA Client",
+            ApplicationName = "HMI OPC UA Client",
             ApplicationUri = Utils.Format(@"urn:{0}:HMIOPCClient", System.Net.Dns.GetHostName()),
             ApplicationType = ApplicationType.Client,
             SecurityConfiguration = new SecurityConfiguration
@@ -89,7 +89,7 @@ public class OPCUaConnectionPool : BaseConnectionPool<Session>
                 {
                     StoreType = "Directory",
                     StorePath = "OPC Foundation/CertificateStores/DefaultApplications",
-                    SubjectName = "K-Chief OPC UA Client"
+                    SubjectName = "HMI OPC UA Client"
                 },
                 TrustedIssuerCertificates = new CertificateTrustList
                 {

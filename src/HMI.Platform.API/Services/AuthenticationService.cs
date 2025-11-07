@@ -8,6 +8,7 @@ using Serilog.Context;
 using HMI.Platform.Core.Interfaces;
 using HMI.Platform.Core.Models;
 using HMI.Platform.Core.Exceptions;
+using HMI.DataAccess.Interfaces;
 
 namespace HMI.Platform.API.Services;
 
@@ -17,6 +18,8 @@ namespace HMI.Platform.API.Services;
 public class AuthenticationService : IHMIAuthenticationService
 {
     private readonly IUserService _userService;
+    private readonly IApiKeyRepository _apiKeyRepository;
+    private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IConfiguration _configuration;
     private readonly ILogger<AuthenticationService> _logger;
     private readonly string _jwtSecret;
@@ -26,10 +29,14 @@ public class AuthenticationService : IHMIAuthenticationService
 
     public AuthenticationService(
         IUserService userService,
+        IApiKeyRepository apiKeyRepository,
+        IRefreshTokenRepository refreshTokenRepository,
         IConfiguration configuration,
         ILogger<AuthenticationService> logger)
     {
         _userService = userService;
+        _apiKeyRepository = apiKeyRepository;
+        _refreshTokenRepository = refreshTokenRepository;
         _configuration = configuration;
         _logger = logger;
         
@@ -134,7 +141,7 @@ public class AuthenticationService : IHMIAuthenticationService
         }
     }
 
-    public Task<AuthenticationResult> AuthenticateApiKeyAsync(string apiKey)
+    public async Task<AuthenticationResult> AuthenticateApiKeyAsync(string apiKey)
     {
         using (LogContext.PushProperty("AuthenticationMethod", "ApiKey"))
         {
@@ -143,34 +150,48 @@ public class AuthenticationService : IHMIAuthenticationService
                 if (string.IsNullOrWhiteSpace(apiKey))
                 {
                     Log.Warning("API key authentication failed: API key is empty");
-                    return Task.FromResult(new AuthenticationResult
+                    return new AuthenticationResult
                     {
                         IsSuccess = false,
                         ErrorMessage = "API key is required"
-                    });
+                    };
                 }
 
                 // Hash the provided API key to compare with stored hash
                 var apiKeyHash = HashPassword(apiKey);
                 
-                // TODO: Implement API key repository to find by hash
-                // For now, return a placeholder implementation
-                Log.Information("API key authentication attempted");
+                // Find API key by hash in repository
+                var storedApiKey = await _apiKeyRepository.GetByKeyHashAsync(apiKeyHash);
                 
-                return Task.FromResult(new AuthenticationResult
+                if (storedApiKey == null || !storedApiKey.IsValid)
                 {
-                    IsSuccess = false,
-                    ErrorMessage = "API key authentication not yet implemented"
-                });
+                    Log.Warning("Invalid or expired API key attempted");
+                    return new AuthenticationResult
+                    {
+                        IsSuccess = false,
+                        ErrorMessage = "Invalid or expired API key"
+                    };
+                }
+
+                // Update usage statistics
+                await _apiKeyRepository.UpdateUsageAsync(storedApiKey.Id);
+                
+                Log.Information("API key authentication successful for key {ApiKeyName}", storedApiKey.Name);
+                
+                return new AuthenticationResult
+                {
+                    IsSuccess = true,
+                    ApiKey = storedApiKey
+                };
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "Error during API key authentication");
-                return Task.FromResult(new AuthenticationResult
+                return new AuthenticationResult
                 {
                     IsSuccess = false,
                     ErrorMessage = "Authentication failed due to an internal error"
-                });
+                };
             }
         }
     }
@@ -247,12 +268,14 @@ public class AuthenticationService : IHMIAuthenticationService
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes(_jwtSecret);
 
+        var jwtId = Guid.NewGuid().ToString();
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, user.Id),
             new(ClaimTypes.Name, user.Username),
             new(ClaimTypes.Email, user.Email),
             new(ClaimTypes.Role, user.Role.ToString()),
+            new(JwtRegisteredClaimNames.Jti, jwtId),
             new("FullName", user.FullName),
             new("Department", user.Department ?? ""),
             new("JobTitle", user.JobTitle ?? "")
@@ -314,16 +337,109 @@ public class AuthenticationService : IHMIAuthenticationService
         return Task.FromResult(tokenHandler.WriteToken(token));
     }
 
-    public Task<string> RefreshTokenAsync(string refreshToken)
+    public async Task<string> RefreshTokenAsync(string refreshToken)
     {
-        // TODO: Implement refresh token logic with token storage
-        return Task.FromException<string>(new NotImplementedException("Refresh token functionality not yet implemented"));
+        using (LogContext.PushProperty("Operation", "RefreshToken"))
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(refreshToken))
+                {
+                    throw new ArgumentException("Refresh token is required", nameof(refreshToken));
+                }
+
+                // Hash the refresh token to find it in the database
+                var tokenHash = HashPassword(refreshToken);
+                var storedToken = await _refreshTokenRepository.GetByTokenHashAsync(tokenHash);
+
+                if (storedToken == null || !storedToken.IsActive)
+                {
+                    Log.Warning("Invalid or expired refresh token attempted");
+                    throw new SecurityTokenException("Invalid or expired refresh token");
+                }
+
+                // Get the user
+                var user = await _userService.GetUserByIdAsync(storedToken.UserId);
+                if (user == null || !user.IsActive)
+                {
+                    Log.Warning("Refresh token belongs to inactive user: {UserId}", storedToken.UserId);
+                    throw new SecurityTokenException("User account is inactive");
+                }
+
+                // Mark the old token as used
+                await _refreshTokenRepository.MarkAsUsedAsync(storedToken.Id);
+
+                // Generate new JWT token
+                var newJwtToken = await GenerateTokenAsync(user);
+
+                // Create new refresh token
+                var newRefreshToken = GenerateRefreshToken();
+                var newRefreshTokenHash = HashPassword(newRefreshToken);
+
+                var refreshTokenEntity = new RefreshToken
+                {
+                    TokenHash = newRefreshTokenHash,
+                    UserId = user.Id,
+                    JwtId = ExtractJwtId(newJwtToken),
+                    ExpiresAt = DateTime.UtcNow.AddDays(_configuration.GetValue<int>("Authentication:JWT:RefreshTokenExpirationDays", 7)),
+                    CreatedByIp = GetCurrentIpAddress()
+                };
+
+                await _refreshTokenRepository.AddAsync(refreshTokenEntity);
+
+                // Revoke the old token and replace with new one
+                await _refreshTokenRepository.RevokeAsync(storedToken.Id, "Replaced by new token", 
+                    GetCurrentIpAddress(), newRefreshTokenHash);
+
+                Log.Information("Refresh token successfully renewed for user {UserId}", user.Id);
+                return newJwtToken;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error during token refresh");
+                throw;
+            }
+        }
     }
 
-    public Task<bool> RevokeTokenAsync(string token)
+    public async Task<bool> RevokeTokenAsync(string token)
     {
-        // TODO: Implement token revocation with token blacklist
-        return Task.FromException<bool>(new NotImplementedException("Token revocation functionality not yet implemented"));
+        using (LogContext.PushProperty("Operation", "RevokeToken"))
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(token))
+                {
+                    throw new ArgumentException("Token is required", nameof(token));
+                }
+
+                // Try to parse the JWT to get the JTI claim
+                var jwtId = ExtractJwtId(token);
+                if (string.IsNullOrEmpty(jwtId))
+                {
+                    Log.Warning("Invalid JWT token provided for revocation");
+                    return false;
+                }
+
+                // Find and revoke the refresh token associated with this JWT
+                var refreshToken = await _refreshTokenRepository.GetByJwtIdAsync(jwtId);
+                if (refreshToken != null && refreshToken.IsActive)
+                {
+                    await _refreshTokenRepository.RevokeAsync(refreshToken.Id, "Token revoked by user", GetCurrentIpAddress());
+                    Log.Information("Refresh token revoked for JWT ID: {JwtId}", jwtId);
+                }
+
+                // In a production system, you would also add the JWT to a blacklist
+                // For now, we'll just revoke the associated refresh token
+                Log.Information("Token revocation completed for JWT ID: {JwtId}", jwtId);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error during token revocation");
+                return false;
+            }
+        }
     }
 
     public string HashPassword(string password)
@@ -347,5 +463,27 @@ public class AuthenticationService : IHMIAuthenticationService
     private string GenerateRefreshToken()
     {
         return Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(64));
+    }
+
+    private string ExtractJwtId(string jwtToken)
+    {
+        try
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var jwt = tokenHandler.ReadJwtToken(jwtToken);
+            return jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti)?.Value ?? string.Empty;
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Error extracting JWT ID from token");
+            return string.Empty;
+        }
+    }
+
+    private string? GetCurrentIpAddress()
+    {
+        // In a real implementation, you would get this from HttpContext
+        // For now, return null as it's optional
+        return null;
     }
 }

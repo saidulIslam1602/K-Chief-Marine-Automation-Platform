@@ -40,7 +40,7 @@ public class ApplicationOptions : ValidatedOptions
 {
     [Required]
     [StringLength(100)]
-    public string ApplicationName { get; set; } = "K-Chief Marine Automation Platform";
+    public string ApplicationName { get; set; } = "HMI Marine Automation Platform";
 
     [Required]
     [StringLength(20)]

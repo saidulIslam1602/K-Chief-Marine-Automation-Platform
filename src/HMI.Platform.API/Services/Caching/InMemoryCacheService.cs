@@ -160,7 +160,7 @@ public class InMemoryCacheService : ICacheService
             if (_memoryCache.TryGetValue(fullKey, out var value))
             {
                 var expirationTime = expiration ?? _options.DefaultExpiration;
-                return SetAsync(fullKey, (T)value!, expirationTime, cancellationToken);
+                return SetAsync(fullKey, value!, expirationTime, cancellationToken);
             }
 
             Log.Debug("Cannot refresh non-existent cache key {CacheKey}", fullKey);

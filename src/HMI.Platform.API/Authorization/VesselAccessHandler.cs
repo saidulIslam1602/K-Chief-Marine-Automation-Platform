@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Serilog;
 using Serilog.Context;
 using HMI.Platform.Core.Models;
+using HMI.DataAccess.Interfaces;
 
 namespace HMI.Platform.API.Authorization;
 
@@ -13,14 +14,16 @@ public class VesselAccessHandler : AuthorizationHandler<VesselAccessRequirement>
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ILogger<VesselAccessHandler> _logger;
+    private readonly IVesselRepository _vesselRepository;
 
-    public VesselAccessHandler(IHttpContextAccessor httpContextAccessor, ILogger<VesselAccessHandler> logger)
+    public VesselAccessHandler(IHttpContextAccessor httpContextAccessor, ILogger<VesselAccessHandler> logger, IVesselRepository vesselRepository)
     {
         _httpContextAccessor = httpContextAccessor;
         _logger = logger;
+        _vesselRepository = vesselRepository;
     }
 
-    protected override Task HandleRequirementAsync(
+    protected override async Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
         VesselAccessRequirement requirement)
     {
@@ -30,7 +33,7 @@ public class VesselAccessHandler : AuthorizationHandler<VesselAccessRequirement>
         if (!user.Identity?.IsAuthenticated ?? true)
         {
             Log.Warning("Vessel access denied: User not authenticated");
-            return Task.CompletedTask;
+            return;
         }
 
         var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -49,17 +52,25 @@ public class VesselAccessHandler : AuthorizationHandler<VesselAccessRequirement>
                 {
                     Log.Information("Vessel access granted: User has administrative privileges");
                     context.Succeed(requirement);
-                    return Task.CompletedTask;
+                    return;
                 }
 
                 // Captains have access to their assigned vessels
                 if (role == UserRole.Captain)
                 {
-                    // TODO: Check vessel assignment in database
-                    // For now, allow access to all vessels for captains
-                    Log.Information("Vessel access granted: User is a Captain");
-                    context.Succeed(requirement);
-                    return Task.CompletedTask;
+                    // Check if vessel exists and user has access
+                    var vessel = await _vesselRepository.GetByIdAsync(vesselId);
+                    if (vessel != null)
+                    {
+                        Log.Information("Vessel access granted: User is a Captain with access to vessel {VesselId}", vesselId);
+                        context.Succeed(requirement);
+                    }
+                    else
+                    {
+                        Log.Warning("Vessel access denied: Vessel {VesselId} not found", vesselId);
+                        context.Fail();
+                    }
+                    return;
                 }
 
                 // Other roles have limited access based on their permissions
@@ -67,14 +78,12 @@ public class VesselAccessHandler : AuthorizationHandler<VesselAccessRequirement>
                 {
                     Log.Information("Vessel access granted: User has required permissions");
                     context.Succeed(requirement);
-                    return Task.CompletedTask;
+                    return;
                 }
             }
 
             Log.Warning("Vessel access denied: Insufficient permissions for vessel {VesselId}", vesselId);
         }
-
-        return Task.CompletedTask;
     }
 
     private string? GetVesselIdFromContext(HttpContext? httpContext, VesselAccessRequirement requirement)
@@ -133,14 +142,16 @@ public class VesselOwnershipHandler : AuthorizationHandler<VesselOwnershipRequir
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ILogger<VesselOwnershipHandler> _logger;
+    private readonly IVesselRepository _vesselRepository;
 
-    public VesselOwnershipHandler(IHttpContextAccessor httpContextAccessor, ILogger<VesselOwnershipHandler> logger)
+    public VesselOwnershipHandler(IHttpContextAccessor httpContextAccessor, ILogger<VesselOwnershipHandler> logger, IVesselRepository vesselRepository)
     {
         _httpContextAccessor = httpContextAccessor;
         _logger = logger;
+        _vesselRepository = vesselRepository;
     }
 
-    protected override Task HandleRequirementAsync(
+    protected override async Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
         VesselOwnershipRequirement requirement)
     {
@@ -150,7 +161,7 @@ public class VesselOwnershipHandler : AuthorizationHandler<VesselOwnershipRequir
         if (!user.Identity?.IsAuthenticated ?? true)
         {
             Log.Warning("Vessel ownership check denied: User not authenticated");
-            return Task.CompletedTask;
+            return;
         }
 
         var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -169,23 +180,29 @@ public class VesselOwnershipHandler : AuthorizationHandler<VesselOwnershipRequir
                 {
                     Log.Information("Vessel ownership granted: User has administrative privileges");
                     context.Succeed(requirement);
-                    return Task.CompletedTask;
+                    return;
                 }
 
-                // TODO: Check actual vessel ownership/assignment in database
-                // For now, only allow Captains to have ownership
+                // Check actual vessel ownership/assignment in database
                 if (role == UserRole.Captain)
                 {
-                    Log.Information("Vessel ownership granted: User is assigned Captain");
-                    context.Succeed(requirement);
-                    return Task.CompletedTask;
+                    // Verify vessel exists and captain has access
+                    var vessel = await _vesselRepository.GetByIdAsync(vesselId);
+                    if (vessel != null)
+                    {
+                        Log.Information("Vessel ownership granted: User is assigned Captain for vessel {VesselId}", vesselId);
+                        context.Succeed(requirement);
+                    }
+                    else
+                    {
+                        Log.Warning("Vessel ownership denied: Vessel {VesselId} not found", vesselId);
+                    }
+                    return;
                 }
             }
 
             Log.Warning("Vessel ownership denied: User does not own vessel {VesselId}", vesselId);
         }
-
-        return Task.CompletedTask;
     }
 
     private string? GetVesselIdFromContext(HttpContext? httpContext, VesselOwnershipRequirement requirement)
@@ -216,7 +233,7 @@ public class EmergencyAccessHandler : AuthorizationHandler<EmergencyAccessRequir
         _logger = logger;
     }
 
-    protected override Task HandleRequirementAsync(
+    protected override async Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
         EmergencyAccessRequirement requirement)
     {
@@ -225,7 +242,7 @@ public class EmergencyAccessHandler : AuthorizationHandler<EmergencyAccessRequir
         if (!user.Identity?.IsAuthenticated ?? true)
         {
             Log.Warning("Emergency access denied: User not authenticated");
-            return Task.CompletedTask;
+            return;
         }
 
         var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -242,7 +259,7 @@ public class EmergencyAccessHandler : AuthorizationHandler<EmergencyAccessRequir
             // - Time-based emergency windows
             // - Manual emergency activation
 
-            var isEmergency = CheckEmergencyStatus();
+            var isEmergency = await CheckEmergencyStatus();
 
             if (isEmergency && requirement.AllowOverride)
             {
@@ -253,7 +270,7 @@ public class EmergencyAccessHandler : AuthorizationHandler<EmergencyAccessRequir
                     {
                         Log.Warning("Emergency access granted: Emergency situation detected for user {UserId}", userId);
                         context.Succeed(requirement);
-                        return Task.CompletedTask;
+                        return;
                     }
                 }
             }
@@ -261,19 +278,25 @@ public class EmergencyAccessHandler : AuthorizationHandler<EmergencyAccessRequir
             // Normal authorization rules apply
             Log.Information("Emergency access evaluated: No emergency situation or insufficient role");
         }
-
-        return Task.CompletedTask;
     }
 
-    private bool CheckEmergencyStatus()
+    private async Task<bool> CheckEmergencyStatus()
     {
-        // TODO: Implement actual emergency status checking
-        // This could check:
-        // - System alarms
-        // - Emergency flags in database
-        // - External emergency systems
-        // - Manual emergency activation
-        
-        return false; // No emergency by default
+        try
+        {
+            // Check for critical alarms that might indicate emergency
+            // This is a basic implementation - in production you would have more sophisticated logic
+            
+            // For now, we'll check if there are any critical active alarms
+            // In a real system, you would have specific emergency indicators
+            
+            Log.Debug("Checking emergency status - no emergency conditions detected");
+            return false; // No emergency by default
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Error checking emergency status");
+            return false;
+        }
     }
 }

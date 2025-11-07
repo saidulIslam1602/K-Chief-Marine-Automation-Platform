@@ -49,8 +49,8 @@ public class ErrorLoggingService
             ["request"] = httpContext != null ? new Dictionary<string, object?>
             {
                 ["method"] = httpContext.Request.Method,
-                ["path"] = httpContext.Request.Path.Value,
-                ["queryString"] = httpContext.Request.QueryString.Value,
+                ["path"] = httpContext.Request.Path.Value ?? "/",
+                ["queryString"] = httpContext.Request.QueryString.Value ?? "",
                 ["headers"] = GetSafeHeaders(httpContext.Request.Headers),
                 ["userAgent"] = httpContext.Request.Headers.UserAgent.ToString() ?? "Unknown",
                 ["remoteIpAddress"] = httpContext.Connection.RemoteIpAddress?.ToString(),

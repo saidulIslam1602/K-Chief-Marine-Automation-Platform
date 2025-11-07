@@ -9,7 +9,7 @@ using Serilog.Context;
 namespace HMI.Platform.API.Resilience;
 
 /// <summary>
-/// Defines resilience policies for the K-Chief Marine Automation Platform.
+/// Defines resilience policies for the HMI Marine Automation Platform.
 /// Implements retry, circuit breaker, timeout, bulkhead, and fallback patterns.
 /// </summary>
 public static class ResiliencePolicies

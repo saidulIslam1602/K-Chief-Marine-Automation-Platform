@@ -21,15 +21,18 @@ public class AuthController : ControllerBase
     private readonly IHMIAuthenticationService _authenticationService;
     private readonly IUserService _userService;
     private readonly ErrorLoggingService _errorLoggingService;
+    private readonly IConfiguration _configuration;
 
     public AuthController(
         IHMIAuthenticationService authenticationService,
         IUserService userService,
-        ErrorLoggingService errorLoggingService)
+        ErrorLoggingService errorLoggingService,
+        IConfiguration configuration)
     {
         _authenticationService = authenticationService;
         _userService = userService;
         _errorLoggingService = errorLoggingService;
+        _configuration = configuration;
     }
 
     /// <summary>
@@ -114,10 +117,11 @@ public class AuthController : ControllerBase
 
                 Log.Information("Token refresh successful");
 
+                var expirationMinutes = _configuration.GetValue<int>("Authentication:JWT:ExpirationMinutes", 60);
                 return Ok(new RefreshTokenResponse
                 {
                     AccessToken = newToken,
-                    ExpiresAt = DateTime.UtcNow.AddMinutes(60) // TODO: Get from configuration
+                    ExpiresAt = DateTime.UtcNow.AddMinutes(expirationMinutes)
                 });
             }
             catch (NotImplementedException)

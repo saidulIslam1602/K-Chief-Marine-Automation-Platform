@@ -1,6 +1,6 @@
-# Docker Setup for K-Chief Marine Automation Platform
+# Docker Setup for HMI Marine Automation Platform
 
-This directory contains Docker configuration files for containerizing the K-Chief Marine Automation Platform.
+This directory contains Docker configuration files for containerizing the HMI Marine Automation Platform.
 
 ## Prerequisites
 
@@ -12,7 +12,7 @@ This directory contains Docker configuration files for containerizing the K-Chie
 To build the Docker image:
 
 ```bash
-docker build -f docker/Dockerfile -t kchief-api:latest .
+docker build -f docker/Dockerfile -t hmi-marine-api:latest .
 ```
 
 ## Running with Docker Compose
@@ -43,7 +43,7 @@ To view container logs:
 
 ```bash
 cd docker
-docker-compose logs -f kchief-api
+docker-compose logs -f hmi-api
 ```
 
 ## Building and Running in One Command

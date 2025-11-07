@@ -61,6 +61,7 @@ using HMI.Platform.API.Services.Telemetry;
 using HMI.Platform.API.Swagger;
 using HMI.Platform.API.Services.Background;
 using HMI.Platform.API.Services.Scheduled;
+using HMI.Platform.API.Services.Configuration;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Spi;
@@ -95,7 +96,7 @@ public class Program
 
         try
         {
-            Log.Information("Starting K-Chief Marine Automation Platform");
+            Log.Information("Starting HMI Marine Automation Platform");
             
             var builder = WebApplication.CreateBuilder(args);
             
@@ -353,7 +354,7 @@ public class Program
         {
             options.SetEvaluationTimeInSeconds(30);
             options.MaximumHistoryEntriesPerEndpoint(50);
-            options.AddHealthCheckEndpoint("K-Chief API", "/health");
+            options.AddHealthCheckEndpoint("HMI API", "/health");
         }).AddInMemoryStorage();
 
         // Register repositories and Unit of Work
@@ -365,6 +366,8 @@ public class Program
         builder.Services.AddScoped<SensorRepository>();
         builder.Services.AddScoped<AlarmRepository>();
         builder.Services.AddScoped<MessageBusEventRepository>();
+        builder.Services.AddScoped<ApiKeyRepository>();
+        builder.Services.AddScoped<RefreshTokenRepository>();
         
         // Register cached repositories (wrappers around base repositories)
         builder.Services.AddScoped<IVesselRepository>(sp =>
@@ -381,6 +384,8 @@ public class Program
         builder.Services.AddScoped<ISensorRepository>(sp => sp.GetRequiredService<SensorRepository>());
         builder.Services.AddScoped<IAlarmRepository>(sp => sp.GetRequiredService<AlarmRepository>());
         builder.Services.AddScoped<IMessageBusEventRepository>(sp => sp.GetRequiredService<MessageBusEventRepository>());
+        builder.Services.AddScoped<IApiKeyRepository>(sp => sp.GetRequiredService<ApiKeyRepository>());
+        builder.Services.AddScoped<IRefreshTokenRepository>(sp => sp.GetRequiredService<RefreshTokenRepository>());
 
             // Register application services
             builder.Services.AddScoped<VesselControlService>(); // Base service
@@ -427,6 +432,13 @@ public class Program
         });
 
         var app = builder.Build();
+
+        // Validate configuration at startup
+        using (var scope = app.Services.CreateScope())
+        {
+            var configValidator = new StartupConfigurationValidator(scope.ServiceProvider, app.Configuration);
+            configValidator.ValidateConfiguration();
+        }
 
         // Configure the HTTP request pipeline
         if (app.Environment.IsDevelopment())
