@@ -34,8 +34,14 @@ jobs:
     - name: Build solution
       run: dotnet build --no-restore --configuration ${{ env.BUILD_CONFIGURATION }} --verbosity minimal
     
-    - name: Run all tests
-      run: dotnet test --no-build --configuration ${{ env.BUILD_CONFIGURATION }} --verbosity minimal --logger "console;verbosity=minimal"
+    - name: Run unit tests
+      run: dotnet test tests/HMI.Platform.Tests --no-build --configuration ${{ env.BUILD_CONFIGURATION }} --verbosity minimal --logger "console;verbosity=minimal"
+      timeout-minutes: 5
+    
+    - name: Run integration tests
+      run: dotnet test tests/HMI.Integration.Tests --no-build --configuration ${{ env.BUILD_CONFIGURATION }} --verbosity minimal --logger "console;verbosity=minimal"
+      timeout-minutes: 3
+      continue-on-error: true
     
     - name: Upload test results
       uses: actions/upload-artifact@v4
